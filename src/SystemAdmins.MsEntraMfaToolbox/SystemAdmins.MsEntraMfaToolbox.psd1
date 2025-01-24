@@ -1,6 +1,6 @@
 @{
     # Script module or binary module file associated with this manifest.
-    RootModule           = 'SystemAdmins.EntraMfaToolbox.psm1';
+    RootModule           = 'SystemAdmins.MsEntraMfaToolbox.psm1';
 
     # Version number of this module.
     ModuleVersion        = '1.0.0';
@@ -9,7 +9,7 @@
     CompatiblePSEditions = @('Core');
 
     # ID used to uniquely identify this module
-    GUID                 = '0ee5b3dc-f9ce-4414-b93b-aea03ef7e108';
+    GUID                 = '68b9d3b7-33b7-45ec-9011-f4bcc43b86c1';
 
     # Author of this module
     Author               = 'Alex Hansen';
@@ -21,7 +21,7 @@
     Copyright            = '2025 System Admins';
 
     # Description of the functionality provided by this module
-    Description          = 'Module for Microsoft Entra Id MFA related tasks';
+    Description          = 'Module for Microsoft Entra MFA related tasks';
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion = '7.0';
@@ -42,13 +42,7 @@
     # ProcessorArchitecture = '';
 
     # Modules that must be imported into the global environment prior to importing this module
-    RequiredModules = @(
-        'Microsoft.Graph.Entra',
-        'Microsoft.Graph.Groups',
-        'Microsoft.Graph.Users',
-        'Microsoft.Graph.Users.Actions',
-        'Microsoft.Graph.Identity.DirectoryManagement'
-    );
+    # RequiredModules = @();
 
     # Assemblies that must be loaded prior to importing this module
     # RequiredAssemblies = @();
@@ -112,14 +106,20 @@
             # RequireLicenseAcceptance = $false;
 
             # External dependent modules of this module
-            # ExternalModuleDependencies = @();
+            ExternalModuleDependencies = @(
+                'Microsoft.Graph.Entra',
+                'Microsoft.Graph.Groups',
+                'Microsoft.Graph.Users',
+                'Microsoft.Graph.Users.Actions',
+                'Microsoft.Graph.Identity.DirectoryManagement'
+            );
 
         }; # End of PSData hashtable
 
     }; # End of PrivateData hashtable
 
     # HelpInfo URI of this module
-    HelpInfoURI = 'https://github.com/System-Admins/entramfatoolbox';
+    HelpInfoURI = 'https://github.com/System-Admins/msentramfatoolbox';
 
     # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
     # DefaultCommandPrefix = '';
