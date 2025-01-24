@@ -9,6 +9,8 @@ This tool was originally developed to get users that are not fully protected by 
 - [Usage](#zap-usage)
   - [Installation](#electric_plug-installation)
   - [Commands](#package-commands)
+  - [Cmdlets](#cmdlets)
+    - [Send-EntraUserMfaStatusReport](#Send-EntraUserMfaStatusReport)
 - [FAQ](#question-faq)
 
 ##  :beginner: About
@@ -37,7 +39,7 @@ Before installing the module, the following prerequisites must be fulfilled:
 
    > **Note:** After installing the dependencies, you need to close the PowerShell session and open a new. This is due to Microsoft not handling the assemblies correctly if multiple modules is installed. Hopefully this is sorted in the future by Microsoft.
 
-2. Import the module in the PowerShell 7 session.
+2. Import the module dependencies in the PowerShell 7 session.
 
    ```powershell
    Import-Module -Name 'Microsoft.Graph.Entra', 'Microsoft.Graph.Groups', 'Microsoft.Graph.Users', 'Microsoft.Graph.Users.Actions', 'Microsoft.Graph.Identity.DirectoryManagement' -Force;
@@ -66,6 +68,41 @@ Before installing the module, the following prerequisites must be fulfilled:
    ```powershell
    Disconnect-Entra
    ```
+
+
+
+## Cmdlets
+
+### Send-EntraUserMfaStatusReport
+
+#### Synopsis
+
+Send a report about user MFA status in Microsoft Entra.
+
+#### Parameter(s)
+
+| Type   | Parameter    | Description                                                  | Optional | Accepted Values |
+| ------ | ------------ | ------------------------------------------------------------ | -------- | --------------- |
+| String | EmailAddress | E-mail to who should receive the report. Defaults to logged-in user in Microsoft Entra | True     | abc@contoso.com |
+
+#### Example(s)
+
+Send a report about user MFA status in Microsoft Entra to logged-in user.
+
+```powershell
+Send-EntraUserMfaStatusReport
+```
+
+Send a report about user MFA status in Microsoft Entra to abc@contoso.com.
+
+```powershell
+Send-EntraUserMfaStatusReport -EmailAddress 'abc@contoso.com'
+```
+
+### Output
+
+Void
+
 
 
 ## :question: FAQ
