@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MFA Status Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background-color: #0e3e45;
+            color: #ffffff;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        .content {
+            margin: 20px 0;
+        }
+
+        .footer {
+            text-align: center;
+            color: #0e3e45;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #e0edeb;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #ffffff;
+        }
+
+        a {
+            color: #0e3e45;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Microsoft 365 User MFA Status Report</h1>
+        </div>
+        <div class="content">
+            <p>Please audit the following internal accounts as they are not fully covered by MFA.</p>
+            <p><b>Last updated</b>: ##DATE##</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Display Name</th>
+                        <th>User Principal Name</th>
+                        <th>Is Admin</th>
+                        <th>Apps (MFA enforced)</th>
+                        <th>Is MFA capable</th>
+                    </tr>
+                </thead>
+                <tbody>
