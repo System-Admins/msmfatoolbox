@@ -1,6 +1,6 @@
 function Send-EntraUserMfaStatusReport
 {
-    <#
+    <#test
     .SYNOPSIS
         Send Entra user MFA status report.
     .DESCRIPTION
