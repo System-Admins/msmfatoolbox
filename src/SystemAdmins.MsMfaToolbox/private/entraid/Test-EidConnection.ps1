@@ -12,26 +12,19 @@ function Test-EntraConnection
     [OutputType([bool])]
     param
     (
+        [Parameter(Mandatory = $true)]
+        [string[]]$RequiredScope
     )
 
-    BEGIN
+    begin
     {
         # Write to log.
-        $customProgress = Write-CustomProgress -Activity $MyInvocation.MyCommand.Name -CurrentOperation 'Test Microsoft Entra connection';
+        $customProgress = Write-CustomProgress -Activity $MyInvocation.MyCommand.Name -CurrentOperation 'Testing connection to Microsoft Entra ID';
 
         # Boolean to store result.
         [bool]$connected = $false;
-
-        # Required Entra scopes.
-        $requiredScopes = @(
-            'Policy.Read.All',
-            'GroupMember.Read.All',
-            'User.Read.All',
-            'RoleManagement.Read.All',
-            'Mail.Send'
-        );
     }
-    PROCESS
+    process
     {
         # Try to get entra context.
         try
@@ -40,27 +33,27 @@ function Test-EntraConnection
             $entraContext = Get-EntraContext -ErrorAction Stop;
 
             # If context is not null.
-            if($null -ne $entraContext)
+            if ($null -ne $entraContext)
             {
                 # Required scopes is in the context.
-                $requiredScopesValid = $true;
+                $requiredScopeValid = $true;
 
                 # Foreach required scope.
-                foreach ($requiredScope in $requiredScopes)
+                foreach ($scope in $RequiredScopes)
                 {
                     # If scope is not in the context.
-                    if ($requiredScope -notin $entraContext.Scopes)
+                    if ($scope -notin $entraContext.Scopes)
                     {
                         # Write to log.
-                        Write-CustomLog -Message ('The required scope "{0}" is not in the context' -f $requiredScope) -Level 'Verbose';
+                        Write-CustomLog -Message ('The required scope "{0}" is not in the context' -f $scope) -Level 'Verbose';
 
                         # Set to false.
-                        $requiredScopesValid = $false;
+                        $requiredScopeValid = $false;
                     }
                 }
 
                 # If all required scopes is in the context.
-                if ($requiredScopesValid)
+                if ($true -eq $requiredScopeValid)
                 {
                     # Set to true.
                     $connected = $true;
@@ -73,7 +66,7 @@ function Test-EntraConnection
             $connected = $false;
         }
     }
-    END
+    end
     {
         # Write to log.
         Write-CustomProgress @customProgress;

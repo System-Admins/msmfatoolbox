@@ -1,4 +1,4 @@
-function Get-EntraRoleMemberRecursive
+function Get-EidRoleMemberRecursive
 {
     <#
     .SYNOPSIS
@@ -8,7 +8,7 @@ function Get-EntraRoleMemberRecursive
     .PARAMETER GroupId
         Guid format such as "0ee5b3dc-f9ce-4414-b93b-aea03ef7e108" (without quotes).
     .EXAMPLE
-        Get-EntraRoleMemberRecursive -Id "0ee5b3dc-f9ce-4414-b93b-aea03ef7e108";
+        Get-EidRoleMemberRecursive -Id "0ee5b3dc-f9ce-4414-b93b-aea03ef7e108";
     #>
     [cmdletbinding()]
     [OutputType([System.Collections.ArrayList])]

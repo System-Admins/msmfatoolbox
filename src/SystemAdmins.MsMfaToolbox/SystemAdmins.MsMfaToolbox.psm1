@@ -66,7 +66,7 @@ $publicFunctions = $publicPs1Files.Basename;
 
 # Global variables.
 ## Module.
-$script:ModuleName = 'SystemAdmins.MsEntraMfaToolbox';
+$script:ModuleName = 'SystemAdmins.MsMfaToolbox';
 
 ## Logging.
 $script:ModuleTempFolderPath = ('{0}\{1}' -f ([System.IO.Path]::GetTempPath()), $script:ModuleName);
@@ -75,15 +75,16 @@ $script:ModuleLogFileName = ('{0}_EntraMfaToolbox.log' -f (Get-Date -Format 'yyy
 $script:ModuleLogPath = Join-Path -Path $ModuleLogFolder -ChildPath $ModuleLogFileName;
 
 # Test the connection to Entra.
-$entraConnection = Test-EntraConnection;
+$entraConnection = Test-EntraConnection `
+    -RequiredScope $GraphApiScopes;
 
 # If connection is not valid.
 if ($false -eq $entraConnection)
 {
     # Write to log.
-    Write-CustomLog -Message ('Please connect to Entra using the following code') -Level 'Warning' -NoLogLevel $true -NoDateTime;
-    Write-CustomLog -Message ("Connect-Entra -Scopes 'Policy.Read.All', 'GroupMember.Read.All', 'User.Read.All', 'RoleManagement.Read.All', 'Mail.Send' -NoWelcome") -Level 'Warning' -NoLogLevel $true -NoDateTime;
-    Write-CustomLog -Message ('After connecting to Entra, import the module again using the following') -Level 'Warning' -NoLogLevel $true -NoDateTime;
+    Write-CustomLog -Message ('Please connect to Entra using the following code:') -Level 'Warning' -NoLogLevel $true -NoDateTime;
+    Write-CustomLog -Message ("Connect-Entra -Scopes '{0}' -NoWelcome -ContextScope CurrentUser" -f ($GraphApiScopes -join "', '")) -Level 'Warning' -NoLogLevel $true -NoDateTime;
+    Write-CustomLog -Message ('After connecting to Entra, import the module again using the following:') -Level 'Warning' -NoLogLevel $true -NoDateTime;
     Write-CustomLog -Message ('Import-Module -Name "{0}"' -f $script:ModuleName) -Level 'Warning' -NoLogLevel $true -NoDateTime;
 
     # throw exception.
