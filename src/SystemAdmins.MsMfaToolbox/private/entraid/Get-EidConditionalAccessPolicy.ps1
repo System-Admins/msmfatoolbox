@@ -32,14 +32,20 @@ function Get-EidConditionalAccessPolicy
         {
             # Create result object.
             $result = [PSCustomObject]@{
-                Id          = $entraConditionalAccessPolicy.Id;
-                DisplayName = $entraConditionalAccessPolicy.DisplayName;
-                State       = $entraConditionalAccessPolicy.State;
-                Users       = $null;
+                Id              = $entraConditionalAccessPolicy.Id;
+                DisplayName     = $entraConditionalAccessPolicy.DisplayName;
+                State           = $entraConditionalAccessPolicy.State;
+                Users           = $null;
+                TargetResources = $null;
+                Network         = $null;
             };
 
             # Get user assignment.
             $result.Users = Get-EidConditionalAccessPolicyUser `
+                -PolicyId $entraConditionalAccessPolicy.Id;
+
+            # Get target resources.
+            $result.TargetResources = Get-EidConditionalAccessPolicyTargetResource `
                 -PolicyId $entraConditionalAccessPolicy.Id;
 
             # Add result to results arraylist.

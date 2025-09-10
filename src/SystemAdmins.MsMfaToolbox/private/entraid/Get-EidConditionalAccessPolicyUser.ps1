@@ -11,7 +11,7 @@ function Get-EidConditionalAccessPolicyUser
        Get-EidConditionalAccessPolicyUser -PolicyId "0ee5b3dc-f9ce-4414-b93b-aea03ef7e108";
     #>
     [cmdletbinding()]
-    [OutputType([array])]
+    [OutputType([PSCustomObject])]
     param
     (
         # Backup path.
@@ -60,7 +60,7 @@ function Get-EidConditionalAccessPolicyUser
             'ExcludeGroups'                     = @();
             'ExcludeTransitiveUsers'            = @();
             'TargetedUsers'                     = @();
-        }
+        };
     }
     process
     {
