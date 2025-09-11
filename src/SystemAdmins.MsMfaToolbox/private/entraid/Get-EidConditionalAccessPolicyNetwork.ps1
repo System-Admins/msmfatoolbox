@@ -56,7 +56,6 @@ function Get-EidConditionalAccessPolicyNetwork
     }
     process
     {
-
         # If include locations is one and is 'all trusted' or 'all'.
         if ($locations.IncludeLocations -notcontains 'AllTrusted' -or $locations.IncludeLocations -notcontains 'All')
         {
