@@ -39,6 +39,7 @@ function Get-EidConditionalAccessPolicy
                 TargetResources = $null;
                 Network         = $null;
                 Conditions      = $null;
+                Grant           = $null;
             };
 
             # Get user assignment.
@@ -55,6 +56,10 @@ function Get-EidConditionalAccessPolicy
 
             # Get conditions.
             $result.Conditions = Get-EidConditionalAccessPolicyCondition `
+                -PolicyId $entraConditionalAccessPolicy.Id;
+
+            # Get grant.
+            $result.Grant = Get-EidConditionalAccessPolicyGrant `
                 -PolicyId $entraConditionalAccessPolicy.Id;
 
             # Add result to results arraylist.
