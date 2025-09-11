@@ -112,7 +112,8 @@
                 'Microsoft.Graph.Users',
                 'Microsoft.Graph.Users.Actions',
                 'Microsoft.Graph.Identity.DirectoryManagement',
-                'Microsoft.Entra'
+                'Microsoft.Entra',
+                'Microsoft.Graph.Authentication'
             );
 
         }; # End of PSData hashtable
