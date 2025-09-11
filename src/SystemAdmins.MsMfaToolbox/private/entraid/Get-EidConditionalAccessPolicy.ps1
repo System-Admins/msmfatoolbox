@@ -48,6 +48,10 @@ function Get-EidConditionalAccessPolicy
             $result.TargetResources = Get-EidConditionalAccessPolicyTargetResource `
                 -PolicyId $entraConditionalAccessPolicy.Id;
 
+                # Get network.
+            $result.Network = Get-EidConditionalAccessPolicyNetwork `
+                -PolicyId $entraConditionalAccessPolicy.Id;
+
             # Add result to results arraylist.
             $results.Add($result);
         }
