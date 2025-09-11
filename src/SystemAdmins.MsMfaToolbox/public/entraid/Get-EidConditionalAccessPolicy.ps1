@@ -32,15 +32,36 @@ function Get-EidConditionalAccessPolicy
         {
             # Create result object.
             $result = [PSCustomObject]@{
-                Id              = $entraConditionalAccessPolicy.Id;
-                DisplayName     = $entraConditionalAccessPolicy.DisplayName;
-                State           = $entraConditionalAccessPolicy.State;
-                Users           = $null;
-                TargetResources = $null;
-                Network         = $null;
-                Conditions      = $null;
-                Grant           = $null;
+                Id               = $entraConditionalAccessPolicy.Id;
+                DisplayName      = $entraConditionalAccessPolicy.DisplayName;
+                State            = '';
+                Description      = $entraConditionalAccessPolicy.Description;
+                CreatedDateTime  = $entraConditionalAccessPolicy.CreatedDateTime;
+                ModifiedDateTime = $entraConditionalAccessPolicy.ModifiedDateTime;
+                Users            = $null;
+                TargetResources  = $null;
+                Network          = $null;
+                Conditions       = $null;
+                Grant            = $null;
+                Session          = $null;
             };
+
+            # Set state.
+            switch ($entraConditionalAccessPolicy.State)
+            {
+                'enabled'
+                {
+                    $result.State = 'Enabled';
+                }
+                'disabled'
+                {
+                    $result.State = 'Disabled';
+                }
+                'enabledForReportingButNotEnforced'
+                {
+                    $result.State = 'ReportOnly';
+                }
+            }
 
             # Get user assignment.
             $result.Users = Get-EidConditionalAccessPolicyUser `
@@ -62,8 +83,12 @@ function Get-EidConditionalAccessPolicy
             $result.Grant = Get-EidConditionalAccessPolicyGrant `
                 -PolicyId $entraConditionalAccessPolicy.Id;
 
+            # Get session.
+            $result.Session = Get-EidConditionalAccessPolicySession `
+                -PolicyId $entraConditionalAccessPolicy.Id;
+
             # Add result to results arraylist.
-            $results.Add($result);
+            $null = $results.Add($result);
         }
     }
     end
