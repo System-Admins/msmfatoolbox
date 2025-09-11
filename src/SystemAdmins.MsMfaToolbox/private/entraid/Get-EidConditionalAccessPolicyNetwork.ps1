@@ -46,6 +46,7 @@ function Get-EidConditionalAccessPolicyNetwork
 
         # Create custom object.
         $result = [PSCustomObject]@{
+            'IsConfigured'                = $false;
             'IncludeAllTrustedLocations'  = $false;
             'IncludeAnyNetworkOrLocation' = $false;
             'IncludeLocations'            = @();
@@ -158,6 +159,17 @@ function Get-EidConditionalAccessPolicyNetwork
                 # Remove excluded locations from included locations.
                 $result.TargetedLocations = $result.IncludeLocations | Where-Object { $result.ExcludeLocations.Id -notcontains $_.Id }
             }
+        }
+
+        # If any of the properties is set.
+        if ($true -eq $result.IncludeAllTrustedLocations -or
+            $true -eq $result.IncludeAnyNetworkOrLocation -or
+            $result.IncludeLocations.Count -gt 0 -or
+            $true -eq $result.ExcludeAllTrustedLocations -or
+            $result.ExcludeLocations.Count -gt 0)
+        {
+            # Set is configured to true.
+            $result.IsConfigured = $true;
         }
     }
     end

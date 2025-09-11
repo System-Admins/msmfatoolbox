@@ -50,10 +50,11 @@ function Get-EidConditionalAccessPolicyCondition
         # Create custom object.
         $result = [PSCustomObject]@{
             'DevicePlatforms'     = [PSCustomObject]@{
-                'IsConfigured'     = $false;
-                'IncludePlatform'  = $devicePlatforms.IncludePlatforms;
-                'ExcludePlatform'  = $devicePlatforms.ExcludePlatforms;
-                'TargetedPlatform' = @();
+                'IsConfigured'       = $false;
+                'IncludeAllPlatform' = $false;
+                'IncludePlatform'    = $devicePlatforms.IncludePlatforms;
+                'ExcludePlatform'    = $devicePlatforms.ExcludePlatforms;
+                'TargetedPlatform'   = @();
             };
             'ClientApps'          = [PSCustomObject]@{
                 'IsConfigured'                = $false;
@@ -61,6 +62,7 @@ function Get-EidConditionalAccessPolicyCondition
                 'MobileAppsAndDesktopClients' = $false;
                 'ExchangeActiveSyncClients'   = $false;
                 'OtherClients'                = $false;
+                'ExcludedClientApps'          = @();
             };
             'FilterForDevices'    = [PSCustomObject]@{
                 'IsConfigured' = $false;
@@ -82,6 +84,19 @@ function Get-EidConditionalAccessPolicyCondition
         {
             # Set IsConfigured to true.
             $result.DevicePlatforms.IsConfigured = $true;
+
+            # Get targeted platforms by removing excluded platforms from the included platforms.
+            $result.DevicePlatforms.TargetedPlatform = $devicePlatforms.IncludePlatforms | Where-Object { $devicePlatforms.ExcludePlatforms -notcontains $_ };
+        }
+
+        # If platform is set to include all.
+        if ($devicePlatforms.IncludePlatforms -contains 'all')
+        {
+            # Set IsConfigured to true.
+            $result.DevicePlatforms.IsConfigured = $true;
+
+            # Set IncludeAllPlatform to true.
+            $result.DevicePlatforms.IncludeAllPlatform = $true;
         }
 
         # Foreach client app type.
@@ -119,6 +134,38 @@ function Get-EidConditionalAccessPolicyCondition
                     $result.ClientApps.IsConfigured = $true;
                 }
             };
+        }
+
+        # If client apps is configured.
+        if ($true -eq $result.ClientApps.IsConfigured)
+        {
+            # If Browser is false.
+            if ($false -eq $result.ClientApps.Browser)
+            {
+                # Add to ExcludedClientApps.
+                $result.ClientApps.ExcludedClientApps += 'browser';
+            }
+
+            # If MobileAppsAndDesktopClients is false.
+            if ($false -eq $result.ClientApps.MobileAppsAndDesktopClients)
+            {
+                # Add to ExcludedClientApps.
+                $result.ClientApps.ExcludedClientApps += 'mobileAppsAndDesktopClients';
+            }
+
+            # If ExchangeActiveSyncClients is false.
+            if ($false -eq $result.ClientApps.ExchangeActiveSyncClients)
+            {
+                # Add to ExcludedClientApps.
+                $result.ClientApps.ExcludedClientApps += 'exchangeActiveSync';
+            }
+
+            # If OtherClients is false.
+            if ($false -eq $result.ClientApps.OtherClients)
+            {
+                # add to ExcludedClientApps
+                $result.ClientApps.ExcludedClientApps += 'other';
+            }
         }
 
         # If filter for devices is configured.

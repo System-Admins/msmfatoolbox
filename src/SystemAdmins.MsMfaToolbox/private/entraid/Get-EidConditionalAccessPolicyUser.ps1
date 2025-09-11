@@ -61,12 +61,15 @@ function Get-EidConditionalAccessPolicyUser
             'ExcludeTransitiveUsers'            = @();
             'TargetedUsers'                     = @();
         };
+
+        # Get all Entra roles.
+        $entraRoles = Get-EntraDirectoryRoleDefinition -All;
+
+        # Get users conditions.
+        $users = $entraConditionalAccessPolicy.Conditions.Users;
     }
     process
     {
-        # Get users conditions.
-        $users = $EntraConditionalAccessPolicy.Conditions.Users;
-
         # If include users is set to 'All'.
         if ($users.IncludeUsers.Count -eq 1 -and $users.IncludeUsers -contains 'All')
         {
@@ -234,14 +237,14 @@ function Get-EidConditionalAccessPolicyUser
             }
         }
 
-        # Foreach user in the IncludeUsers
+        # Foreach user in the IncludeUsers.
         foreach ($includeUser in $result.IncludeUsers)
         {
             # Add to IncludeTransitiveUsers
             $result.IncludeTransitiveUsers += $includeUser.UserPrincipalName;
         }
 
-        # Foreach Entra users (if any)
+        # Foreach Entra users (if any).
         foreach ($entraUser in $entraUsers)
         {
             # Add to IncludeTransitiveUsers
@@ -302,7 +305,7 @@ function Get-EidConditionalAccessPolicyUser
         $result.ExcludeTransitiveUsers = $result.ExcludeTransitiveUsers | Sort-Object -Unique;
 
         # Get targeted users by removing excluded users from included users.
-        $result.'TargetedUsers' = $result.IncludeTransitiveUsers | Where-Object { $_ -notin $result.ExcludeTransitiveUsers };
+        $result.TargetedUsers = $result.IncludeTransitiveUsers | Where-Object { $_ -notin $result.ExcludeTransitiveUsers };
 
     }
     end
