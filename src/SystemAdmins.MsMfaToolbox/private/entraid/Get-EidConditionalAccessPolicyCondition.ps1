@@ -114,9 +114,6 @@ function Get-EidConditionalAccessPolicyCondition
         # If user risk levels is configured.
         if ($null -ne $entraConditionalAccessPolicy.Conditions.UserRiskLevels)
         {
-            # Set IsConfigured to true.
-            $result.UserRiskLevels.IsConfigured = $true;
-
             # Foreach user risk level.
             foreach ($userRiskLevel in $entraConditionalAccessPolicy.Conditions.UserRiskLevels)
             {
@@ -127,16 +124,25 @@ function Get-EidConditionalAccessPolicyCondition
                     {
                         # Set Low to true.
                         $result.UserRiskLevels.Low = $true;
+
+                        # Set IsConfigured to true.
+                        $result.UserRiskLevels.IsConfigured = $true;
                     }
                     'medium'
                     {
                         # Set Medium to true.
                         $result.UserRiskLevels.Medium = $true;
+
+                        # Set IsConfigured to true.
+                        $result.UserRiskLevels.IsConfigured = $true;
                     }
                     'high'
                     {
                         # Set High to true.
                         $result.UserRiskLevels.High = $true;
+
+                        # Set IsConfigured to true.
+                        $result.UserRiskLevels.IsConfigured = $true;
 
                     }
                 }
@@ -146,9 +152,6 @@ function Get-EidConditionalAccessPolicyCondition
         # If sign-in risk levels is configured.
         if ($null -ne $entraConditionalAccessPolicy.Conditions.SignInRiskLevels)
         {
-            # Set IsConfigured to true.
-            $result.SignInRiskLevels.IsConfigured = $true;
-
             # Foreach sign-in risk level.
             foreach ($signInRiskLevel in $entraConditionalAccessPolicy.Conditions.SignInRiskLevels)
             {
@@ -159,16 +162,25 @@ function Get-EidConditionalAccessPolicyCondition
                     {
                         # Set Low to true.
                         $result.SignInRiskLevels.Low = $true;
+
+                        # Set IsConfigured to true.
+                        $result.SignInRiskLevels.IsConfigured = $true;
                     }
                     'medium'
                     {
                         # Set Medium to true.
                         $result.SignInRiskLevels.Medium = $true;
+
+                        # Set IsConfigured to true.
+                        $result.SignInRiskLevels.IsConfigured = $true;
                     }
                     'high'
                     {
                         # Set High to true.
                         $result.SignInRiskLevels.High = $true;
+
+                        # Set IsConfigured to true.
+                        $result.SignInRiskLevels.IsConfigured = $true;
 
                     }
                 }
