@@ -83,7 +83,7 @@ if ($false -eq $entraConnection)
 {
     # Write to log.
     Write-CustomLog -Message ('Please connect to Entra using the following code:') -Level 'Warning' -NoLogLevel $true -NoDateTime;
-    Write-CustomLog -Message ("Connect-Entra -Scopes '{0}' -NoWelcome -ContextScope CurrentUser" -f ($GraphApiScopes -join "', '")) -Level 'Warning' -NoLogLevel $true -NoDateTime;
+    Write-CustomLog -Message ("Connect-Entra -Scopes '{0}' -NoWelcome -ContextScope Process" -f ($GraphApiScopes -join "', '")) -Level 'Warning' -NoLogLevel $true -NoDateTime;
     Write-CustomLog -Message ('After connecting to Entra, import the module again using the following:') -Level 'Warning' -NoLogLevel $true -NoDateTime;
     Write-CustomLog -Message ('Import-Module -Name "{0}"' -f $script:ModuleName) -Level 'Warning' -NoLogLevel $true -NoDateTime;
 

@@ -77,6 +77,26 @@ foreach ($conditionalAccessPolicy in $conditionalAccessPolicies)
         continue;
     }
 
+    # If the conditional access have user risk condition configured.
+    if ($true -eq $conditionalAccessPolicy.Conditions.UserRiskLevels.IsConfigured)
+    {
+        # Write to log.
+        Write-CustomLog -Message ("Skipping conditional access policy '{0}', because it have user risk condition configured" -f $conditionalAccessPolicy.DisplayName) -Level 'Verbose';
+
+        # Continue to the next conditional access policy.
+        continue;
+    }
+
+    # If the conditional access have sign-in risk condition configured.
+    if ($true -eq $conditionalAccessPolicy.Conditions.SignInRiskLevels.IsConfigured)
+    {
+        # Write to log.
+        Write-CustomLog -Message ("Skipping conditional access policy '{0}', because it have sign-in risk condition configured" -f $conditionalAccessPolicy.DisplayName) -Level 'Verbose';
+
+        # Continue to the next conditional access policy.
+        continue;
+    }
+
     # Add the conditional access policy to the object array.
     $policiesRequiringMfa += $conditionalAccessPolicy;
 }

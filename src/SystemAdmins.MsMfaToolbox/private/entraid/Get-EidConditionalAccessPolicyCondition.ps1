@@ -56,6 +56,18 @@ function Get-EidConditionalAccessPolicyCondition
                 'ExcludePlatform'    = $devicePlatforms.ExcludePlatforms;
                 'TargetedPlatform'   = @();
             };
+            'UserRiskLevels'      = [PSCustomObject]@{
+                'IsConfigured' = $false;
+                'Low'          = $false;
+                'Medium'       = $false;
+                'High'         = $false;
+            };
+            'SignInRiskLevels'    = [PSCustomObject]@{
+                'IsConfigured' = $false;
+                'Low'          = $false;
+                'Medium'       = $false;
+                'High'         = $false;
+            };
             'ClientApps'          = [PSCustomObject]@{
                 'IsConfigured'                = $false;
                 'Browser'                     = $false;
@@ -97,6 +109,70 @@ function Get-EidConditionalAccessPolicyCondition
 
             # Set IncludeAllPlatform to true.
             $result.DevicePlatforms.IncludeAllPlatform = $true;
+        }
+
+        # If user risk levels is configured.
+        if ($null -ne $entraConditionalAccessPolicy.Conditions.UserRiskLevels)
+        {
+            # Set IsConfigured to true.
+            $result.UserRiskLevels.IsConfigured = $true;
+
+            # Foreach user risk level.
+            foreach ($userRiskLevel in $entraConditionalAccessPolicy.Conditions.UserRiskLevels)
+            {
+                # Based on user risk level.
+                switch ($userRiskLevel)
+                {
+                    'low'
+                    {
+                        # Set Low to true.
+                        $result.UserRiskLevels.Low = $true;
+                    }
+                    'medium'
+                    {
+                        # Set Medium to true.
+                        $result.UserRiskLevels.Medium = $true;
+                    }
+                    'high'
+                    {
+                        # Set High to true.
+                        $result.UserRiskLevels.High = $true;
+
+                    }
+                }
+            }
+        }
+
+        # If sign-in risk levels is configured.
+        if ($null -ne $entraConditionalAccessPolicy.Conditions.SignInRiskLevels)
+        {
+            # Set IsConfigured to true.
+            $result.SignInRiskLevels.IsConfigured = $true;
+
+            # Foreach sign-in risk level.
+            foreach ($signInRiskLevel in $entraConditionalAccessPolicy.Conditions.SignInRiskLevels)
+            {
+                # Based on sign-in risk level.
+                switch ($signInRiskLevel)
+                {
+                    'low'
+                    {
+                        # Set Low to true.
+                        $result.SignInRiskLevels.Low = $true;
+                    }
+                    'medium'
+                    {
+                        # Set Medium to true.
+                        $result.SignInRiskLevels.Medium = $true;
+                    }
+                    'high'
+                    {
+                        # Set High to true.
+                        $result.SignInRiskLevels.High = $true;
+
+                    }
+                }
+            }
         }
 
         # Foreach client app type.

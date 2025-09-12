@@ -86,7 +86,19 @@ function Get-EidConditionalAccessPolicyUser
             foreach ($userId in $users.IncludeUsers)
             {
                 # Get user.
-                $entraUser = Get-EntraUser -ObjectId $userId;
+                $entraUser = Get-EntraUser `
+                    -ObjectId $userId `
+                    -ErrorAction SilentlyContinue;
+
+                # If user is null.
+                if ($null -eq $entraUser)
+                {
+                    # Write to log.
+                    Write-CustomLog -Message ("No user found with ID '{0}'" -f $userId) -Level 'Verbose';
+
+                    # Continue to next user.
+                    continue;
+                }
 
                 # Add to result.
                 $result.'IncludeUsers' += [PSCustomObject]@{
@@ -158,14 +170,21 @@ function Get-EidConditionalAccessPolicyUser
             foreach ($userId in $users.ExcludeUsers)
             {
                 # Get user.
-                $entraUser = Get-EntraUser -ObjectId $userId;
+                $entraUser = Get-EntraUser `
+                    -ObjectId $userId `
+                    -ErrorAction SilentlyContinue;
 
-                # Add to result.
-                $result.'ExcludeUsers' += [PSCustomObject]@{
-                    Id                = $entraUser.Id;
-                    UserPrincipalName = $entraUser.UserPrincipalName;
-                    DisplayName       = $entraUser.DisplayName;
-                };
+                # If user is null.
+                if ($null -eq $entraUser)
+                {
+
+                    # Add to result.
+                    $result.'ExcludeUsers' += [PSCustomObject]@{
+                        Id                = $entraUser.Id;
+                        UserPrincipalName = $entraUser.UserPrincipalName;
+                        DisplayName       = $entraUser.DisplayName;
+                    };
+                }
             }
         }
 
