@@ -88,8 +88,7 @@ function Send-EidUserMfaReport
         LastSuccessfulSignIn,
         @{ Name = 'ConditionalAccessPolicy'; Expression = { $_.ConditionalAccessPolicy -join '|' } },
         IsProtected,
-        Mailbox,
-        MailboxType | Export-Csv -Path $outputFilePath -UseQuotes Always -Encoding utf8 -Delimiter ';' -Force;
+        Mailbox | Export-Csv -Path $outputFilePath -UseQuotes Always -Encoding utf8 -Delimiter ';' -Force;
 
         # Convert CSV to Base64.
         $attachment = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($outputFilePath));
