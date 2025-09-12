@@ -75,7 +75,7 @@ $script:ModuleLogFileName = ('{0}_EntraMfaToolbox.log' -f (Get-Date -Format 'yyy
 $script:ModuleLogPath = Join-Path -Path $ModuleLogFolder -ChildPath $ModuleLogFileName;
 
 # Test the connection to Entra.
-$entraConnection = Test-EntraConnection `
+$entraConnection = Test-EidConnection `
     -RequiredScope $GraphApiScopes;
 
 # If connection is not valid.

@@ -14,7 +14,7 @@ function Get-EidConditionalAccessPolicyUser
     [OutputType([PSCustomObject])]
     param
     (
-        # Backup path.
+        # Policy ID.
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Guid -InputObject $_ })]
@@ -175,9 +175,8 @@ function Get-EidConditionalAccessPolicyUser
                     -ErrorAction SilentlyContinue;
 
                 # If user is null.
-                if ($null -eq $entraUser)
+                if ($null -ne $entraUser)
                 {
-
                     # Add to result.
                     $result.'ExcludeUsers' += [PSCustomObject]@{
                         Id                = $entraUser.Id;

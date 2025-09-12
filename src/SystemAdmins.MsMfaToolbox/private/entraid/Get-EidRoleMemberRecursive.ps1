@@ -14,7 +14,7 @@ function Get-EidRoleMemberRecursive
     [OutputType([System.Collections.ArrayList])]
     param
     (
-        # Backup path.
+        # Policy ID.
         [Parameter(Mandatory = $false, Position = 0, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Guid -InputObject $_ })]

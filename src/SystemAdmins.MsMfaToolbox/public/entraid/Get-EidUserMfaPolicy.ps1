@@ -5,176 +5,218 @@ function Get-EidUserMfaPolicy
         Get all user multi-factor authentication conditional access policies from Microsoft Entra ID.
     .DESCRIPTION
         Return users that are exempt from multi-factor authentication (not fully covered).
+    .PARAMETER UserPrincipalName
+        UserPrincipalName such as "user@domain.com" (without quotes).
+        If not specified, all users are returned.
+    .PARAMETER OnlyEnabled
+        If specified, only enabled users are returned.
     .EXAMPLE
         Get-EidUserMfaPolicy;
     #>
     [cmdletbinding()]
-    [OutputType([System.Collections.ArrayList])]
+    [OutputType([array])]
     param
     (
+        # UserPrincipalName.
+        [Parameter(Mandatory = $false, Position = 0, ValueFromPipelineByPropertyName = $true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({ $_ | ForEach-Object { Test-EmailAddress -InputObject $_ } })]
+        [string[]]$UserPrincipalName,
+
+        # Only enabled users.
+        [Parameter(Mandatory = $false, Position = 1, ValueFromPipelineByPropertyName = $true)]
+        [switch]$OnlyEnabled
     )
 
     begin
     {
         # Write to log.
-        $customProgress = Write-CustomProgress -Activity $MyInvocation.MyCommand.Name -CurrentOperation 'Retrieving users that are exempted from MFA for conditional access policies in Microsoft Entra ID';
+        $customProgress = Write-CustomProgress -Activity $MyInvocation.MyCommand.Name -CurrentOperation 'Retrieving user(s) that are exempted from MFA for conditional access policies in Microsoft Entra ID';
 
-        # Get all conditional access policies.
-        $conditionalAccessPolicies = Get-EidConditionalAccessPolicy;
+        # Get all conditional access policies that require MFA.
+        $conditionalAccessPolicies = Get-EidConditionalAccessMfaPolicy;
 
-        # Get Entra (enabled) users.
-        $entraUsers = (Get-EntraUser -Property UserPrincipalName -Filter 'AccountEnabled eq true' -All).UserPrincipalName;
+        # Entra properties to get.
+        $entraUserProperties = @('Id', 'UserPrincipalName', 'DisplayName', 'AccountEnabled', 'onPremisesSyncEnabled', 'UserType', 'PasswordPolicies', 'SignInActivity', 'SignInSessionsValidFromDateTime', 'mail', 'proxyAddresses');
 
-        # Object array to store policies that require multi-factor authentication.
-        $policiesRequiringMfa = @();
+        # If only enabled users should be returned.
+        if ($true -eq $OnlyEnabled)
+        {
+            # Write to log.
+            Write-CustomLog -Message 'Only enabled users will be returned' -Level 'Verbose';
 
-        # Object array to store users that are exempted from multi-factor authentication.
-        $results = @();
+            # Get Entra (enabled) users.
+            $entraUsers = (Get-EntraUser -Filter 'AccountEnabled eq true' -Property $entraUserProperties -All);
+        }
+        # Else get all users.
+        else
+        {
+            # Write to log.
+            Write-CustomLog -Message 'Both enabled and disabled users will be returned' -Level 'Verbose';
+
+            # Get all Entra users.
+            $entraUsers = (Get-EntraUser -Property $entraUserProperties -All);
+        }
+
+        # Object array to store users.
+        $result = @();
     }
     process
     {
-        # Foreach conditional access policy.
-        foreach ($conditionalAccessPolicy in $conditionalAccessPolicies)
-        {
-            #}
-            # If the conditional access policy is not enabled.
-            if ('Enabled' -ne $conditionalAccessPolicy.State)
-            {
-                # Write to log.
-                Write-CustomLog -Message ("Skipping conditional access policy '{0}', because it's not enabled" -f $conditionalAccessPolicy.DisplayName) -Level 'Verbose';
-
-                # Continue to the next conditional access policy.
-                #continue;
-            }
-
-            # If the conditional access does not require multi-factor authentication.
-            if ($false -eq $conditionalAccessPolicy.Grant.RequireMfa -and
-                $false -eq $conditionalAccessPolicy.Grant.RequireAuthenticationStrength)
-            {
-                # Write to log.
-                Write-CustomLog -Message ("Skipping conditional access policy '{0}', because it do not require MFA" -f $conditionalAccessPolicy.DisplayName) -Level 'Verbose';
-
-                # Continue to the next conditional access policy.
-                continue;
-            }
-
-            # If the conditional access dont include either all applications or "Office 365" and "Microsoft Admin Portals".
-            if ($false -eq $conditionalAccessPolicy.TargetResources.IncludeAllApplications -and
-                (($conditionalAccessPolicy.TargetResources.TargetedApplications).DisplayName -notcontains 'Office365' -or
-                ($conditionalAccessPolicy.TargetResources.TargetedApplications).DisplayName -notcontains 'MicrosoftAdminPortals'))
-            {
-                # Write to log.
-                Write-CustomLog -Message ("Skipping conditional access policy '{0}', because it do not target all or best-practice cloud applications" -f $conditionalAccessPolicy.DisplayName) -Level 'Verbose';
-
-                # Continue to the next conditional access policy.
-                continue;
-            }
-
-            # If the conditional access policy does not target all network locations.
-            if ($true -eq $conditionalAccessPolicy.Network.IsConfigured -and
-                $false -eq $conditionalAccessPolicy.Network.IncludeAnyNetworkOrLocation)
-            {
-                # Write to log.
-                Write-CustomLog -Message ("Skipping conditional access policy '{0}', because it do not target all network locations" -f $conditionalAccessPolicy.DisplayName) -Level 'Verbose';
-
-                # Continue to the next conditional access policy.
-                continue;
-            }
-
-            # If the conditional access exclude one or more device platforms.
-            if ($true -eq $conditionalAccessPolicy.Conditions.DevicePlatforms.IsConfigured -and
-                $conditionalAccessPolicy.Conditions.DevicePlatforms.ExcludePlatform.Count -gt 0)
-            {
-                # Write to log.
-                Write-CustomLog -Message ("Skipping conditional access policy '{0}', because it exclude one or more device platforms" -f $conditionalAccessPolicy.DisplayName) -Level 'Verbose';
-
-                # Continue to the next conditional access policy.
-                continue;
-            }
-
-            # If the conditional access policy exclude one or more client app types.
-            if ($true -eq $conditionalAccessPolicy.Conditions.ClientApps.IsConfigured -and
-                $conditionalAccessPolicy.Conditions.ClientApps.ExcludedClientApps.Count -gt 0)
-            {
-                # Write to log.
-                Write-CustomLog -Message ("Skipping conditional access policy '{0}', because it exclude one or more client app types" -f $conditionalAccessPolicy.DisplayName) -Level 'Verbose';
-
-                # Continue to the next conditional access policy.
-                continue;
-            }
-
-            # If the conditional access have user risk condition configured.
-            if ($true -eq $conditionalAccessPolicy.Conditions.UserRiskLevels.IsConfigured)
-            {
-                # Write to log.
-                Write-CustomLog -Message ("Skipping conditional access policy '{0}', because it have user risk condition configured" -f $conditionalAccessPolicy.DisplayName) -Level 'Verbose';
-
-                # Continue to the next conditional access policy.
-                continue;
-            }
-
-            # If the conditional access have sign-in risk condition configured.
-            if ($true -eq $conditionalAccessPolicy.Conditions.SignInRiskLevels.IsConfigured)
-            {
-                # Write to log.
-                Write-CustomLog -Message ("Skipping conditional access policy '{0}', because it have sign-in risk condition configured" -f $conditionalAccessPolicy.DisplayName) -Level 'Verbose';
-
-                # Continue to the next conditional access policy.
-                continue;
-            }
-
-            # Add the conditional access policy to the object array.
-            $policiesRequiringMfa += $conditionalAccessPolicy;
-        }
-
         # Foreach Entra user.
         foreach ($entraUser in $entraUsers)
         {
-            # Boolean if user is a guest.
-            [bool]$isGuestUser = $false;
+            # Protected by conditional access policy.
+            [bool]$isProtectedByMFA = $true;
 
-            # If the Entra user is a guest user.
-            if ($entraUser -like '*#EXT#@*')
+            # If UserPrincipalName parameter is specified and the user is not in the list.
+            if ($PSBoundParameters.ContainsKey('UserPrincipalName') -and
+                $entraUser.UserPrincipalName -notin $UserPrincipalName)
             {
-                # Set boolean to true.
-                $isGuestUser = $true;
+                # Write to log.
+                Write-CustomLog -Message ("Skipping user '{0}', because it's not in the list of specified users" -f $entraUser.UserPrincipalName) -Level 'Verbose';
+
+                # Set isProtectedByMFA to false.
+                $isProtectedByMFA = $false;
             }
 
             # Object array to store policies that is targeting the user.
             $policiesTargetingUser = @();
 
+            # If there is no conditional access policies that require multi-factor authentication.
+            if ($conditionalAccessPolicies.Count -eq 0)
+            {
+                # Write to log.
+                Write-CustomLog -Message ("No conditional access policies require multi-factor authentication, user '{0}' is NOT protected by MFA" -f $entraUser.UserPrincipalName) -Level 'Verbose';
+
+                # Set isProtectedByMFA to false.
+                $isProtectedByMFA = $false;
+            }
+
             # Foreach conditional access policy that require multi-factor authentication.
-            foreach ($policyRequiringMfa in $policiesRequiringMfa)
+            foreach ($conditionalAccessPolicy in $conditionalAccessPolicies)
             {
                 # If the user is a guest user and the conditional access policy exclude one or more guest types.
-                if ($true -eq $isGuestUser -and $policyRequiringMfa.Users.ExcludeGuestsOrExternalUsersTypes.Count -gt 0)
+                if ($entraUser.userType -eq 'Guest' -and $conditionalAccessPolicy.Users.ExcludeGuestsOrExternalUsersTypes.Count -gt 0)
                 {
                     # Write to log.
-                    Write-CustomLog -Message ("User '{0}' is excluded from conditional access policy '{1}'" -f $entraUser, $policyRequiringMfa.DisplayName) -Level 'Verbose';
+                    Write-CustomLog -Message ("Guest user '{0}' is excluded from conditional access policy '{1}'" -f $entraUser.UserPrincipalName, $conditionalAccessPolicy.DisplayName) -Level 'Verbose';
 
-                    # Continue to the next conditional access policy.
-                    continue;
+                    # Set isProtectedByMFA to false.
+                    $isProtectedByMFA = $false;
                 }
 
                 # If the user is targeted by the conditional access policy.
-                if ($entraUser -in $policyRequiringMfa.Users.TargetedUsers)
+                if ($entraUser.UserPrincipalName -in $conditionalAccessPolicy.Users.TargetedUsers)
                 {
                     # Write to log.
-                    Write-CustomLog -Message ("User '{0}' is targeted by conditional access policy '{1}'" -f $entraUser, $policyRequiringMfa.DisplayName) -Level 'Verbose';
+                    Write-CustomLog -Message ("User '{0}' is targeted by conditional access policy '{1}'" -f $entraUser.UserPrincipalName, $conditionalAccessPolicy.DisplayName) -Level 'Verbose';
 
                     # Add the conditional access policy to the object array.
-                    $policiesTargetingUser += $policyRequiringMfa;
+                    $policiesTargetingUser += $conditionalAccessPolicy;
+                }
+                # Else user is not targeted by the conditional access policy.
+                else
+                {
+                    # Write to log.
+                    Write-CustomLog -Message ("User '{0}' is NOT targeted by conditional access policy '{1}'" -f $entraUser.UserPrincipalName, $conditionalAccessPolicy.DisplayName) -Level 'Verbose';
+
+                    # Set isProtectedByMFA to false.
+                    $isProtectedByMFA = $false;
                 }
             }
 
-            # If the user is not targeted by any conditional access policy that require multi-factor authentication.
-            if ($policiesTargetingUser.Count -eq 0)
+            # Create custom object to store user information.
+            $user = [PSCustomObject]@{
+                Id                      = $entraUser.Id;
+                UserPrincipalName       = $entraUser.UserPrincipalName;
+                DisplayName             = $entraUser.DisplayName;
+                AccountEnabled          = $entraUser.AccountEnabled;
+                DirSyncEnabled          = $false;
+                UserType                = $entraUser.UserType;
+                PasswordPolicies        = $entraUser.PasswordPolicies;
+                LastSuccessfulSignIn    = $entraUser.SignInActivity.lastSuccessfulSignInDateTime;
+                ConditionalAccessPolicy = ($policiesTargetingUser).DisplayName;
+                IsProtected             = $isProtectedByMFA;
+                Mailbox                 = $false;
+                MailboxType             = $null;
+            };
+
+            # If the user is not a guest.
+            if ($entraUser.userType -ne 'Guest')
+            {
+                # If proxyAddresses property is set.
+                if ($false -eq [string]::IsNullOrEmpty($entraUser.proxyAddresses))
+                {
+                    # Boolean to track SMTP address found.
+                    [bool]$smtpAddressFound = $false;
+
+                    # Foreach proxy address.
+                    foreach ($proxyAddress in $entraUser.proxyAddresses)
+                    {
+                        # If SMTP address is found, break the loop.
+                        if ($true -eq $smtpAddressFound)
+                        {
+                            # If SMTP address is found, break the loop.
+                            break;
+                        }
+
+                        # If the proxy address starts with "SMTP:" (primary SMTP address).
+                        if ($proxyAddress -like 'SMTP:*')
+                        {
+                            # Set SMTP address found to true.
+                            $smtpAddressFound = $true;
+                        }
+                    }
+
+                    # If the user has a SMTP address.
+                    if ($true -eq $smtpAddressFound)
+                    {
+                        # Set Mailbox to true.
+                        $user.Mailbox = $true;
+                    }
+
+                    # Get the user's mailbox settings.
+                    $mailboxSettings = (Get-EntraUser `
+                            -UserId $entraUser.Id `
+                            -Property MailboxSettings `
+                            -ErrorAction SilentlyContinue).MailboxSettings;
+
+                    # If the user has mailbox settings.
+                    if ($null -ne $mailboxSettings)
+                    {
+                        # Set mailbox type.
+                        $user.MailboxType = $mailboxSettings.userPurpose;
+                    }
+                    # Else user must be a a non-user mailbox.
+                    else
+                    {
+                        # Set mailbox type to None.
+                        $user.MailboxType = 'non-user';
+                    }
+                }
+            }
+
+            # If the user is synchronized from on-premises Active Directory.
+            if ($true -eq $entraUser.onPremisesSyncEnabled)
+            {
+                # Set DirSyncEnabled to true.
+                $user.DirSyncEnabled = $true;
+            }
+
+            # Add the user to the object array.
+            $result += $user;
+
+            # If the user is protected by MFA.
+            if ($true -eq $isProtectedByMFA)
             {
                 # Write to log.
-                Write-CustomLog -Message ("User '{0}' is not targeted by any conditional access policy that require multi-factor authentication" -f $entraUser) -Level 'Verbose';
-
-                # Add the user to the object array.
-                $results += $entraUser;
+                Write-CustomLog -Message ("User '{0}' is protected by MFA" -f $entraUser.UserPrincipalName) -Level 'Verbose';
+            }
+            else
+            {
+                # Write to log.
+                Write-CustomLog -Message ("User '{0}' is NOT protected by MFA" -f $entraUser.UserPrincipalName) -Level 'Verbose';
             }
         }
     }
@@ -184,6 +226,6 @@ function Get-EidUserMfaPolicy
         Write-CustomProgress @customProgress;
 
         # Return results.
-        return $results;
+        return $result;
     }
 }

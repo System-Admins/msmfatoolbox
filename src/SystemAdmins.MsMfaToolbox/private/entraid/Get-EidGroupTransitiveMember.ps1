@@ -14,7 +14,7 @@ function Get-EidGroupTransitiveMember
     [OutputType([System.Collections.ArrayList])]
     param
     (
-        # Backup path.
+        # Policy ID.
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Guid -InputObject $_ })]

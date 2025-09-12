@@ -15,7 +15,7 @@ function Test-EmailAddress
     [OutputType([bool])]
     param
     (
-        # Backup path.
+        # Policy ID.
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
         [string]$InputObject

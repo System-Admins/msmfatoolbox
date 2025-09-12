@@ -4,5 +4,7 @@ $GraphApiScopes = @(
     'GroupMember.Read.All',
     'User.Read.All',
     'RoleManagement.Read.All'
-    'RoleManagement.Read.Directory'
+    'RoleManagement.Read.Directory',
+    'MailboxSettings.Read',
+    'Mail.Send'
 );

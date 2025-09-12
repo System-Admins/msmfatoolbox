@@ -1,4 +1,4 @@
-function Test-EntraConnection
+function Test-EidConnection
 {
     <#
     .SYNOPSIS
@@ -6,7 +6,7 @@ function Test-EntraConnection
     .DESCRIPTION
         Return true or false based on if a valid connection to Entra is established.
     .EXAMPLE
-        Test-EntraConnection;
+        Test-EidConnection;
     #>
     [cmdletbinding()]
     [OutputType([bool])]
@@ -35,20 +35,29 @@ function Test-EntraConnection
             # If context is not null.
             if ($null -ne $entraContext)
             {
+                # Write to log.
+                Write-CustomLog -Message ('Existing connected context scopes: {0}' -f ($entraContext.Scopes -join ', ')) -Level 'Verbose';
+
                 # Required scopes is in the context.
                 $requiredScopeValid = $true;
 
                 # Foreach required scope.
-                foreach ($scope in $RequiredScopes)
+                foreach ($scope in $RequiredScope)
                 {
                     # If scope is not in the context.
                     if ($scope -notin $entraContext.Scopes)
                     {
                         # Write to log.
-                        Write-CustomLog -Message ('The required scope "{0}" is not in the context' -f $scope) -Level 'Verbose';
+                        Write-CustomLog -Message ('The required scope "{0}" is NOT in the context' -f $scope) -Level 'Verbose';
 
                         # Set to false.
                         $requiredScopeValid = $false;
+                    }
+                    # Else write to log.
+                    else
+                    {
+                        # Write to log.
+                        Write-CustomLog -Message ('The required scope "{0}" is in the context' -f $scope) -Level 'Verbose';
                     }
                 }
 
@@ -58,6 +67,12 @@ function Test-EntraConnection
                     # Set to true.
                     $connected = $true;
                 }
+            }
+            # Else write to log.
+            else
+            {
+                # Write to log.
+                Write-CustomLog -Message 'No Entra context found' -Level 'Verbose';
             }
         }
         catch
