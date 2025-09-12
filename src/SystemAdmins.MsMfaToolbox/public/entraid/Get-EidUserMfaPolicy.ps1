@@ -133,13 +133,12 @@ function Get-EidUserMfaPolicy
                 DisplayName             = $entraUser.DisplayName;
                 AccountEnabled          = $entraUser.AccountEnabled;
                 DirSyncEnabled          = $false;
-                UserType                = $entraUser.UserType;
+                UserType                = '';
                 PasswordPolicies        = $entraUser.PasswordPolicies;
                 LastSuccessfulSignIn    = $entraUser.SignInActivity.lastSuccessfulSignInDateTime;
                 ConditionalAccessPolicy = ($policiesTargetingUser).DisplayName;
-                IsProtected             = $isProtectedByMFA;
-                Mailbox                 = $false;
-                MailboxType             = $null;
+                IsProtected             = $false;
+                HasMailbox              = $false;
             };
 
             # If the user is not a guest.
@@ -173,27 +172,31 @@ function Get-EidUserMfaPolicy
                     if ($true -eq $smtpAddressFound)
                     {
                         # Set Mailbox to true.
-                        $user.Mailbox = $true;
+                        $user.HasMailbox = $true;
                     }
+                }
+            }
 
-                    # Get the user's mailbox settings.
-                    $mailboxSettings = (Get-EntraUser `
-                            -UserId $entraUser.Id `
-                            -Property MailboxSettings `
-                            -ErrorAction SilentlyContinue).MailboxSettings;
-
-                    # If the user has mailbox settings.
-                    if ($null -ne $mailboxSettings)
-                    {
-                        # Set mailbox type.
-                        $user.MailboxType = $mailboxSettings.userPurpose;
-                    }
-                    # Else user must be a a non-user mailbox.
-                    else
-                    {
-                        # Set mailbox type to None.
-                        $user.MailboxType = 'non-user';
-                    }
+            # If the user is a guest.
+            if ($entraUser.UserType -eq 'Guest')
+            {
+                # Set UserType to Guest.
+                $user.UserType = 'Guest';
+            }
+            # Else if the user is a member.
+            elseif ($entraUser.UserType -eq 'Member')
+            {
+                # If the user principal name dont have '#EXT#@'.
+                if ($entraUser.UserPrincipalName -notlike '*#EXT#@*')
+                {
+                    # Set UserType to Member.
+                    $user.UserType = 'Member';
+                }
+                # Else the user is external.
+                else
+                {
+                    # Set UserType to External.
+                    $user.UserType = 'External';
                 }
             }
 
@@ -204,20 +207,24 @@ function Get-EidUserMfaPolicy
                 $user.DirSyncEnabled = $true;
             }
 
-            # Add the user to the object array.
-            $result += $user;
-
             # If the user is protected by MFA.
-            if ($true -eq $isProtectedByMFA)
+            if ($policiesTargetingUser.Count -gt 0)
             {
                 # Write to log.
                 Write-CustomLog -Message ("User '{0}' is protected by MFA" -f $entraUser.UserPrincipalName) -Level 'Verbose';
+
+                # Set IsProtected to true.
+                $user.IsProtected = $true;
             }
+            # Else user is not protected by MFA.
             else
             {
                 # Write to log.
                 Write-CustomLog -Message ("User '{0}' is NOT protected by MFA" -f $entraUser.UserPrincipalName) -Level 'Verbose';
             }
+
+            # Add the user to the object array.
+            $result += $user;
         }
     }
     end

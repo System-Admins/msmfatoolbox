@@ -99,4 +99,6 @@ foreach ($exportFunction in $publicFunctions)
 }
 
 # Export functions.
-Export-ModuleMember -Function $publicFunctions;
+Export-ModuleMember `
+    -Function $publicFunctions `
+    -ErrorAction SilentlyContinue;
