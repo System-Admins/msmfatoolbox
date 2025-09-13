@@ -111,8 +111,7 @@
 
             # External dependent modules of this module
             ExternalModuleDependencies = @(
-                'Microsoft.Graph.Entra',
-                'Microsoft.Graph.Grsoups',
+                'Microsoft.Graph.Groups',
                 'Microsoft.Graph.Users',
                 'Microsoft.Graph.Users.Actions',
                 'Microsoft.Graph.Identity.DirectoryManagement',
