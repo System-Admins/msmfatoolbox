@@ -199,7 +199,7 @@ Array
 
   ```powershell
   # Managed Identity Display Name.
-  $managedIdentityObjectId = '8022bb7c-e83e-4382-bb3f-014d560e0a5b';
+  $managedIdentityObjectId = 'OBJECT ID OF THE MANAGED IDENTITY';
   
   # Connect to Microsoft Graph (delegated permissions).
   Connect-MgGraph `
