@@ -74,6 +74,16 @@ $script:ModuleLogFolder = ('{0}\Log' -f $script:ModuleTempFolderPath);
 $script:ModuleLogFileName = ('{0}_EntraMfaToolbox.log' -f (Get-Date -Format 'yyyyMMddHHmmss'));
 $script:ModuleLogPath = Join-Path -Path $ModuleLogFolder -ChildPath $ModuleLogFileName;
 
+# Required Microsoft Graph API scopes.
+$GraphApiScopes = @(
+    'Policy.Read.All',
+    'GroupMember.Read.All',
+    'User.Read.All',
+    'RoleManagement.Read.All'
+    'RoleManagement.Read.Directory',
+    'Mail.Send'
+);
+
 # Test the connection to Entra.
 $entraConnection = Test-EidConnection `
     -RequiredScope $GraphApiScopes;
@@ -98,7 +108,7 @@ foreach ($exportFunction in $publicFunctions)
     Write-CustomLog -Message ("Exporting the function '{0}'" -f $exportFunction) -Level Verbose;
 }
 
-# Export functions.
+<# Export functions.
 Export-ModuleMember `
     -Function $publicFunctions `
-    -ErrorAction SilentlyContinue;
+    -ErrorAction SilentlyContinue;#>

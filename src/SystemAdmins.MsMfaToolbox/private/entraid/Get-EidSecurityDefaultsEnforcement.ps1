@@ -1,4 +1,4 @@
-function Get-EidSecurityDefaultEnforcement
+function Get-EidSecurityDefaultsEnforcement
 {
     <#
     .SYNOPSIS
@@ -6,7 +6,7 @@ function Get-EidSecurityDefaultEnforcement
     .DESCRIPTION
         Returns true or false if security defaults are enabled.
     .EXAMPLE
-       Get-EidSecurityDefaultEnforcement;
+       Get-EidSecurityDefaultsEnforcement;
     #>
     [cmdletbinding()]
     [OutputType([bool])]

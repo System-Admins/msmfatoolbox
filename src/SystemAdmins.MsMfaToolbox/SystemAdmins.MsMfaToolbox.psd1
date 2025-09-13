@@ -3,7 +3,7 @@
     RootModule           = 'SystemAdmins.MsMfaToolbox.psm1';
 
     # Version number of this module.
-    ModuleVersion        = '1.0.0';
+    ModuleVersion        = '2.0.0';
 
     # Supported PSEditions
     CompatiblePSEditions = @('Core');
@@ -24,7 +24,7 @@
     Description          = 'Module for Microsoft MFA related tasks';
 
     # Minimum version of the PowerShell engine required by this module
-    PowerShellVersion    = '7.0';
+    PowerShellVersion    = '7.2';
 
     # Name of the PowerShell host required by this module
     # PowerShellHostName = '';
@@ -63,7 +63,11 @@
     # FunctionsToExport    = '*';
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-    CmdletsToExport      = '*';
+    CmdletsToExport      = @(
+        'Get-EidConditionalAccessPolicy',
+        'Get-EidUserMfaPolicy',
+        'Send-EidUserMfaReport'
+    );
 
     # Variables to export from this module
     # VariablesToExport    = '*';

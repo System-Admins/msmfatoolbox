@@ -39,6 +39,20 @@ function Send-EidUserMfaReport
         # Update header with date.
         $header = $header -replace '##DATE##', (Get-Date -Format 'yyyy-MM-dd HH:mm:ss');
 
+        # If security defaults is enabled.
+        if ($true -eq (Get-EidSecurityDefaultsEnforcement))
+
+        {
+            # Update header with security defaults info.
+            $header = $header -replace '##SecurityDefaultsInfo##', 'Microsoft 365 security default is enabled, so all users are protected by MFA. Disregard below findings.';
+        }
+        # Else security defaults is disabled.
+        else
+        {
+            # Update header with security defaults info.
+            $header = $header -replace '##SecurityDefaultsInfo##', 'Microsoft 365 security default is disabled, so some users might not be fully protected by MFA.';
+        }
+
         # Add header.
         $html = $header | Out-String;
 
@@ -53,22 +67,47 @@ function Send-EidUserMfaReport
     }
     process
     {
+        # Counter for users.
+        [int]$userCount = 0;
+
         # Foreach user.
         foreach ($user in $users)
         {
             # If the user is not protected by a conditional access policy requiring MFA.
-            if ($false -eq $user.IsProtected)
+            if ($true -eq $user.IsProtected)
             {
-                # Add user to HTML.
-                $html += '<tr>' | Out-String;
-                $html += "<td>$($user.UserPrincipalName)</td>" | Out-String;
-                $html += "<td>$($user.DisplayName)</td>" | Out-String;
-                $html += "<td>$($user.AccountEnabled)</td>" | Out-String;
-                $html += "<td>$($user.UserType)</td>" | Out-String;
-                $html += "<td>$($user.LastSuccessfulSignIn)</td>" | Out-String;
-                $html += '</tr>' | Out-String;
+                # Continue to next user.
+                continue;
             }
+
+            # If the user is not a member.
+            if ($user.UserType -ne 'Member')
+            {
+                # Continue to next user.
+                continue;
+            }
+
+            # If the account is disabled.
+            if ($false -eq $user.AccountEnabled)
+            {
+                # Continue to next user.
+                continue;
+            }
+
+            # Add user to HTML.
+            $html += '<tr>' | Out-String;
+            $html += "<td>$($user.UserPrincipalName)</td>" | Out-String;
+            $html += "<td>$($user.DisplayName)</td>" | Out-String;
+            $html += "<td>$($user.UserType)</td>" | Out-String;
+            $html += "<td>$($user.LastSuccessfulSignIn)</td>" | Out-String;
+            $html += '</tr>' | Out-String;
+
+            # Increment user counter.
+            $userCount++;
         }
+
+        # Update header with users count.
+        $html = $html -replace '##UsersCount##', $userCount;
 
         # Add footer.
         $html += $footer | Out-String;
@@ -120,14 +159,24 @@ function Send-EidUserMfaReport
             saveToSentItems = 'true';
         };
 
-        # Write to log.
-        Write-CustomLog -Message ("Sending MFA status report to '{0}'" -f $EmailAddress) -Level Verbose;
+        # If users count is zero.
+        if ($Users.Count -eq 0)
+        {
+            # Write to log.
+            Write-CustomLog -Message 'No users found for the MFA status report, skipping e-mail sending' -Level Warning;
+        }
+        # Else send the e-mail.
+        else
+        {
+            # Write to log.
+            Write-CustomLog -Message ("Sending MFA status report to '{0}'" -f $EmailAddress) -Level Verbose;
 
-        # A UPN can also be used as -UserId.
-        $null = Send-MgUserMail `
-            -UserId (Get-EntraContext).Account `
-            -BodyParameter $params `
-            -ErrorAction Stop;
+            # A UPN can also be used as -UserId.
+            $null = Send-MgUserMail `
+                -UserId (Get-EntraContext).Account `
+                -BodyParameter $params `
+                -ErrorAction Stop;
+        }
     }
     end
     {

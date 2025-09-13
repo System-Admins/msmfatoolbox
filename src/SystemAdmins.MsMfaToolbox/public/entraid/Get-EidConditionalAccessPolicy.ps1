@@ -49,16 +49,22 @@ function Get-EidConditionalAccessPolicy
             # Set state.
             switch ($entraConditionalAccessPolicy.State)
             {
+                # If the policy is enabled.
                 'enabled'
                 {
+                    # Set state to Enabled.
                     $result.State = 'Enabled';
                 }
+                # If the policy is disabled.
                 'disabled'
                 {
+                    # Set state to Disabled.
                     $result.State = 'Disabled';
                 }
+                # If the policy is enabled for reporting but not enforced.
                 'enabledForReportingButNotEnforced'
                 {
+                    # Set state to ReportOnly.
                     $result.State = 'ReportOnly';
                 }
             }
