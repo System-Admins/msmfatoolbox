@@ -42,8 +42,7 @@ Before installing the module, the following prerequisites must be fulfilled:
 1. To install the module and it dependencies, run the following in a PowerShell 7 session:
 
    ```powershell
-   Install-Module -Name 'Microsoft.Entra' -Scope CurrentUser -Force;
-   Install-Module -Name 'Microsoft.Graph.Entra', 'Microsoft.Graph.Grsoups', 'Microsoft.Graph.Users', 'Microsoft.Graph.Users.Actions', 'Microsoft.Graph.Identity.DirectoryManagement', 'Microsoft.Entra', 'Microsoft.Graph.Authentication' -Scope CurrentUser -Force;
+   Install-Module -Name 'Microsoft.Entra', 'Microsoft.Graph.Entra', 'Microsoft.Graph.Grsoups', 'Microsoft.Graph.Users', 'Microsoft.Graph.Users.Actions', 'Microsoft.Graph.Identity.DirectoryManagement', 'Microsoft.Entra', 'Microsoft.Graph.Authentication' -Scope CurrentUser -Force;
    Install-Module -Name 'SystemAdmins.MsMfaToolbox' -Scope CurrentUser -Force;
    ```
 
