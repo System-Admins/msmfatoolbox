@@ -97,8 +97,8 @@ if ($false -eq $entraConnection)
     Write-CustomLog -Message ('After connecting to Entra, import the module again using the following:') -Level 'Warning' -NoLogLevel $true -NoDateTime;
     Write-CustomLog -Message ('Import-Module -Name "{0}"' -f $script:ModuleName) -Level 'Warning' -NoLogLevel $true -NoDateTime;
 
-    # throw exception.
-    throw ('No valid connection to Microsoft Entra');
+    # Throw exception.
+    throw ('Authentication needed. Please call Connect-Entra.');
 }
 
 # Foreach function in the public functions.

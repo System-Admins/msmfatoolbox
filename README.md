@@ -1,5 +1,5 @@
 # Introduction
-Welcome to the Microsoft Entra MFA toolbox PowerShell (SystemAdmins.MsMfaToolbox) module!
+Welcome to the Microsoft MFA toolbox PowerShell (SystemAdmins.MsMfaToolbox) module!
 
 This tool was originally developed to get users that are not fully protected by MFA (all apps in Entra ID). Over time, it will evolve to include a comprehensive set of features aimed at enhancing the MFA state of a Microsoft 365 environment. By leveraging this module, administrators can gain valuable insights into their organization's security posture and take proactive measures to mitigate potential risks.
 
@@ -30,28 +30,28 @@ Before installing the module, the following prerequisites must be fulfilled:
 
 - [ ] **PowerShell 7** installed, [see this for more information](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.4).
 - [ ] The running account must have the following scopes:
-      'Policy.Read.All'
-      'GroupMember.Read.All'
-      'User.Read.All'
-      'RoleManagement.Read.All
-      'RoleManagement.Read.Directory'
-      'Mail.Send' (this is used to send a report)
-- [ ] Exchange Online license assigned to the account running the script (this is required to send an e-mail).
+   'Policy.Read.All'
+   'GroupMember.Read.All'
+   'User.Read.All'
+   'RoleManagement.Read.All
+   'RoleManagement.Read.Directory'
+   'Mail.Send' (this is used to send a report)
+- [ ] When using a delegated user to run the module a Exchange Online license assigned to the account running the cmdlet (this is required to send an e-mail).
 
 ###  :package: Commands
 1. To install the module and it dependencies, run the following in a PowerShell 7 session:
 
    ```powershell
-   Install-Module -Name 'Microsoft.Entra', 'Microsoft.Graph.Groups', 'Microsoft.Graph.Users', 'Microsoft.Graph.Users.Actions', 'Microsoft.Graph.Identity.DirectoryManagement', 'Microsoft.Graph.Authentication' -Scope CurrentUser -Force;
+   Install-Module -Name 'Microsoft.Entra' -Scope CurrentUser -Force -AllowClobber;
    Install-Module -Name 'SystemAdmins.MsMfaToolbox' -Scope CurrentUser -Force;
    ```
 
-   > **Note:** After installing the dependencies, you need to close the PowerShell session and open a new. This is due to Microsoft not handling the assemblies correctly if multiple modules is installed. Hopefully this is sorted in the future by Microsoft.
+   > **Note:** If there is already some PowerShell Microsoft Graph modules installed, they may conflict with the Microsoft.Entra module, please uninstall all installed modules to ensure a smooth run, see FAQ on how to uninstall those. Also make sure that after installing the dependencies, it's required to close the PowerShell session and open a new one to ensure now assemblies is loaded.
 
 2. Import the module dependencies in the PowerShell 7 session.
 
    ```powershell
-   Import-Module -Name 'Microsoft.Entra', 'Microsoft.Graph.Groups', 'Microsoft.Graph.Users', 'Microsoft.Graph.Users.Actions', 'Microsoft.Graph.Identity.DirectoryManagement',  'Microsoft.Graph.Authentication', 'SystemAdmins.MsMfaToolbox' -Force;
+   Import-Module -Name 'Microsoft.Entra', 'SystemAdmins.MsMfaToolbox' -Force;
    ```
 
 3. Login to Microsoft Entra using the following.
@@ -70,7 +70,6 @@ Before installing the module, the following prerequisites must be fulfilled:
 
    ```powershell
    Disconnect-Entra -ErrorAction SilentlyContinue;
-   Disconnect-MgGraph -ErrorAction SilentlyContinue;
    ```
 
 
@@ -193,18 +192,18 @@ Array
 - **Why is it free?**
 
   Why shouldn't it be.
-  
+
 - **If you need to assign permission scopes to a managed identity, you can run the following:**
 
   ```powershell
   # Managed Identity Display Name.
   $managedIdentityObjectId = 'OBJECT ID OF THE MANAGED IDENTITY';
-  
+
   # Connect to Microsoft Graph (delegated permissions).
   Connect-MgGraph `
       -Scopes @('Directory.ReadWrite.All', 'AppRoleAssignment.ReadWrite.All') `
       -ContextScope Process;
-  
+
   # Required Microsoft Graph API scopes.
   $graphApiScopes = @(
       'Policy.Read.All',
@@ -214,15 +213,15 @@ Array
       'RoleManagement.Read.Directory',
       'Mail.Send'
   );
-  
+
   # Get managed identity.
   $managedIdentity = Get-MgServicePrincipal `
       -Filter "Id eq '$managedIdentityObjectId'";
-  
+
   # Get Graph Service Principal.
   $graphSPN = Get-MgServicePrincipal `
       -Filter "AppId eq '00000003-0000-0000-c000-000000000000'";
-  
+
   # Foreach required permission, assign to managed identity.
   foreach ($graphApiScope in $graphApiScopes)
   {
@@ -230,24 +229,68 @@ Array
       $appRole = $graphSPN.AppRoles |
           Where-Object { $_.Value -eq $graphApiScope } |
               Where-Object { $_.AllowedMemberTypes -contains 'Application' };
-  
+
       # If app role not found.
       if ($null -eq $appRole)
       {
           # Continue to next permission.
           continue;
       }
-  
+
       # Create app role assignment.
       $bodyParam = @{
           PrincipalId = $managedIdentity.Id
           ResourceId  = $graphSPN.Id
           AppRoleId   = $appRole.Id
       }
-  
+
       # Assign app role to managed identity.
       New-MgServicePrincipalAppRoleAssignment `
           -ServicePrincipalId $managedIdentity.Id `
           -BodyParameter $bodyParam;
   }
   ```
+
+- **If you have issues with modules overlapping (assembly conflict), you can try to uninstall all modules:**
+
+  ```powershell
+    # Get all installed modules.
+    $installedModules = Get-InstalledModule;
+  
+    # Foreach install module.
+    foreach ($installedModule in $installedModules)
+    {
+        # Get all versions.
+        $versions = Get-InstalledModule -Name $installedModule.Name -AllVersions;
+  
+        # Foreach version.
+        foreach ($version in $versions)
+        {
+            # Try to remove module.
+            try
+            {
+                # Remove installed module.
+                $null = Uninstall-Module `
+                    -InputObject $version `
+                    -Force `
+                    -Confirm:$false `
+                    -ErrorAction Stop `
+                    -WarningAction SilentlyContinue;
+  
+                # Write to log.
+                Write-Information `
+                    -Message ("[SUCCESS] Removed module '{0}' version '{1}'" -f $version.Name, $version.Version) `
+                    -InformationAction Continue;
+            }
+            catch
+            {
+                # Write to log.
+                Write-Information `
+                    -Message ("[ERROR] Cant remove module '{0}' version '{1}'. {2}" -f $version.Name, $version.Version, $_) `
+                    -InformationAction Continue;
+            }
+        }
+    }
+  ```
+  
+  You can now try to run the [installation](#installation) again of this module

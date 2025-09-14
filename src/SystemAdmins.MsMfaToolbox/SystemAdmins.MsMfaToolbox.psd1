@@ -42,7 +42,14 @@
     # ProcessorArchitecture = '';
 
     # Modules that must be imported into the global environment prior to importing this module
-    # RequiredModules = @();
+    RequiredModules      = @(
+        'Microsoft.Entra',
+        'Microsoft.Graph.Groups',
+        'Microsoft.Graph.Users',
+        'Microsoft.Graph.Users.Actions',
+        'Microsoft.Graph.Identity.DirectoryManagement',
+        'Microsoft.Graph.Authentication'
+    );
 
     # Assemblies that must be loaded prior to importing this module
     # RequiredAssemblies = @();
@@ -89,16 +96,16 @@
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags                       = @('mfa', 'microsoft', 'it', 'm365', 'azuread', 'entraid');
+            Tags       = @('mfa', 'microsoft', 'it', 'm365', 'azuread', 'entraid');
 
             # A URL to the license for this module.
             # LicenseUri = '';
 
             # A URL to the main website for this project.
-            ProjectUri                 = 'https://github.com/System-Admins/msmfatoolbox';
+            ProjectUri = 'https://github.com/System-Admins/msmfatoolbox';
 
             # A URL to an icon representing this module.
-            IconUri                    = 'https://www.systemadmins.com/wp-content/uploads/2022/04/SA-logo.svg';
+            IconUri    = 'https://www.systemadmins.com/wp-content/uploads/2022/04/SA-logo.svg';
 
             # ReleaseNotes of this module
             # ReleaseNotes = '';
@@ -110,14 +117,7 @@
             # RequireLicenseAcceptance = $false;
 
             # External dependent modules of this module
-            ExternalModuleDependencies = @(
-                'Microsoft.Graph.Groups',
-                'Microsoft.Graph.Users',
-                'Microsoft.Graph.Users.Actions',
-                'Microsoft.Graph.Identity.DirectoryManagement',
-                'Microsoft.Entra',
-                'Microsoft.Graph.Authentication'
-            );
+            #ExternalModuleDependencies = @();
 
         }; # End of PSData hashtable
 
