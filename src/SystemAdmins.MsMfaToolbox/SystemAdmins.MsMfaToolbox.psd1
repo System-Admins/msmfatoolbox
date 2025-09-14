@@ -43,12 +43,7 @@
 
     # Modules that must be imported into the global environment prior to importing this module
     RequiredModules      = @(
-        'Microsoft.Entra',
-        'Microsoft.Graph.Groups',
-        'Microsoft.Graph.Users',
-        'Microsoft.Graph.Users.Actions',
-        'Microsoft.Graph.Identity.DirectoryManagement',
-        'Microsoft.Graph.Authentication'
+        'Microsoft.Entra'
     );
 
     # Assemblies that must be loaded prior to importing this module
