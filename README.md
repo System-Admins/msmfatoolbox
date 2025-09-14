@@ -30,12 +30,12 @@ Before installing the module, the following prerequisites must be fulfilled:
 
 - [ ] **PowerShell 7** installed, [see this for more information](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.4).
 - [ ] The running account must have the following scopes:
-   'Policy.Read.All'
-   'GroupMember.Read.All'
-   'User.Read.All'
-   'RoleManagement.Read.All
-   'RoleManagement.Read.Directory'
-   'Mail.Send' (this is used to send a report)
+   - 'Policy.Read.All'
+   - 'GroupMember.Read.All'
+   - 'User.Read.All'
+   - 'RoleManagement.Read.All
+   - 'RoleManagement.Read.Directory'
+   - 'Mail.Send' (this is used to send a report)
 - [ ] When using a delegated user to run the module a Exchange Online license assigned to the account running the cmdlet (this is required to send an e-mail).
 
 ###  :package: Commands
@@ -256,13 +256,13 @@ Array
   ```powershell
     # Get all installed modules.
     $installedModules = Get-InstalledModule;
-
+  
     # Foreach install module.
     foreach ($installedModule in $installedModules)
     {
         # Get all versions.
         $versions = Get-InstalledModule -Name $installedModule.Name -AllVersions;
-
+  
         # Foreach version.
         foreach ($version in $versions)
         {
@@ -276,7 +276,7 @@ Array
                     -Confirm:$false `
                     -ErrorAction Stop `
                     -WarningAction SilentlyContinue;
-
+  
                 # Write to log.
                 Write-Information `
                     -Message ("[SUCCESS] Removed module '{0}' version '{1}'" -f $version.Name, $version.Version) `
