@@ -1,4 +1,4 @@
-function Send-EntraUserMfaStatusReport
+function Send-EidUserMfaReport
 {
     <#
     .SYNOPSIS
@@ -8,7 +8,7 @@ function Send-EntraUserMfaStatusReport
     .PARAMETER EmailAddress
         E-mail address to send the report.
     .EXAMPLE
-        Send-EntraUserMfaStatusReport -EmailAddress 'abc@contoso.com';
+        Send-EidUserMfaReport -EmailAddress 'abc@contoso.com';
     #>
     [cmdletbinding()]
     [OutputType([void])]
@@ -21,27 +21,37 @@ function Send-EntraUserMfaStatusReport
         [string]$EmailAddress = ((Get-EntraContext).Account)
     )
 
-    BEGIN
+    begin
     {
         # Write to log.
         $customProgress = Write-CustomProgress -Activity $MyInvocation.MyCommand.Name -CurrentOperation 'Sending Entra user MFA status report';
 
-        # Write to log.
-        Write-CustomLog -Message ('Microsoft Entra User MFA Status Report') -Level Console;
-        Write-CustomLog -Message ('Gathering information from Microsoft Entra, this might take a while (be patient)') -Level Console -IndentLevel 1;
-
         # Get Entra user MFA status.
-        $entraUserMfaStatus = Get-EntraUserMfaStatus;
+        $users = Get-EidUserMfaPolicy;
 
         # Import header and footer.
-        $header = Get-Content -Path (Join-Path -Path $Script:scriptPath -ChildPath 'private\assets\email\send-entrausermfastatusreport\header.html');
-        $footer = Get-Content -Path (Join-Path -Path $Script:scriptPath -ChildPath 'private\assets\email\send-entrausermfastatusreport\footer.html');
+        $header = Get-Content -Path (Join-Path -Path $Script:scriptPath -ChildPath 'private\assets\send-eidusermfareport\header.html');
+        $footer = Get-Content -Path (Join-Path -Path $Script:scriptPath -ChildPath 'private\assets\send-eidusermfareport\footer.html');
 
         # HTML.
         [string]$html = '';
 
         # Update header with date.
         $header = $header -replace '##DATE##', (Get-Date -Format 'yyyy-MM-dd HH:mm:ss');
+
+        # If security defaults is enabled.
+        if ($true -eq (Get-EidSecurityDefaultsEnforcement))
+
+        {
+            # Update header with security defaults info.
+            $header = $header -replace '##SecurityDefaultsInfo##', 'Microsoft 365 security default is enabled, so all users are protected by MFA. Disregard below findings.';
+        }
+        # Else security defaults is disabled.
+        else
+        {
+            # Update header with security defaults info.
+            $header = $header -replace '##SecurityDefaultsInfo##', 'Microsoft 365 security default is disabled, so some users might not be fully protected by MFA.';
+        }
 
         # Add header.
         $html = $header | Out-String;
@@ -54,48 +64,50 @@ function Send-EntraUserMfaStatusReport
 
         # Output file path.
         [string]$outputFilePath = Join-Path -Path $tempFolderPath -ChildPath $outputFileName;
-
-        # User object array.
-        $users = @();
     }
-    PROCESS
+    process
     {
+        # Counter for users.
+        [int]$userCount = 0;
+
         # Foreach user.
-        foreach ($user in $entraUserMfaStatus)
+        foreach ($user in $users)
         {
-            # If user is protected by MFA.
-            if ($user.FullMfa -eq $true)
+            # If the user is not protected by a conditional access policy requiring MFA.
+            if ($true -eq $user.IsProtected)
             {
-                # Skip to next user.
+                # Continue to next user.
                 continue;
             }
 
-            # If user is disabled.
+            # If the user is not a member.
+            if ($user.UserType -ne 'Member')
+            {
+                # Continue to next user.
+                continue;
+            }
+
+            # If the account is disabled.
             if ($false -eq $user.AccountEnabled)
             {
-                # Skip to next user.
+                # Continue to next user.
                 continue;
             }
-
-            # If user is external.
-            if ($user.UserPrincipalName -like '*#EXT#@*')
-            {
-                # Skip to next user.
-                continue;
-            }
-
-            # Add to object array.
-            $users += $user;
 
             # Add user to HTML.
             $html += '<tr>' | Out-String;
-            $html += "<td>$($user.DisplayName)</td>" | Out-String;
             $html += "<td>$($user.UserPrincipalName)</td>" | Out-String;
-            $html += "<td>$($user.IsAdmin)</td>" | Out-String;
-            $html += "<td>$($user.Apps -join ',<br>')</td>" | Out-String;
-            $html += "<td>$($user.IsMfaCapable)</td>" | Out-String;
+            $html += "<td>$($user.DisplayName)</td>" | Out-String;
+            $html += "<td>$($user.UserType)</td>" | Out-String;
+            $html += "<td>$($user.LastSuccessfulSignIn)</td>" | Out-String;
             $html += '</tr>' | Out-String;
+
+            # Increment user counter.
+            $userCount++;
         }
+
+        # Update header with users count.
+        $html = $html -replace '##UsersCount##', $userCount;
 
         # Add footer.
         $html += $footer | Out-String;
@@ -103,14 +115,19 @@ function Send-EntraUserMfaStatusReport
         # Write to log.
         Write-CustomLog -Message ('Found {0} MFA users for the MFA status report' -f $users.Count) -Level 'Verbose';
         Write-CustomLog -Message ("Exporting report to '{0}'" -f $outputFilePath) -Level 'Verbose';
-        Write-CustomLog -Message ("Exporting report to '{0}'" -f $outputFilePath) -Level Console -IndentLevel 1;
 
         # Save status report as CSV.
-        $null = $users | Select-Object -Property DisplayName,
+        $null = $users | Select-Object -Property Id,
         UserPrincipalName,
-        IsAdmin,
-        @{ Name = 'Apps'; Expression = { $_.Apps -join ', ' } },
-        IsMfaCapable | Export-Csv -Path $outputFilePath -UseQuotes Always -Encoding utf8 -Delimiter ';' -Force;
+        DisplayName,
+        AccountEnabled,
+        DirSyncEnabled,
+        UserType,
+        @{ Name = 'PasswordPolicies'; Expression = { $_.PasswordPolicies -join '|' } },
+        LastSuccessfulSignIn,
+        @{ Name = 'ConditionalAccessPolicy'; Expression = { $_.ConditionalAccessPolicy -join '|' } },
+        IsProtected,
+        Mailbox | Export-Csv -Path $outputFilePath -UseQuotes Always -Encoding utf8 -Delimiter ';' -Force;
 
         # Convert CSV to Base64.
         $attachment = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($outputFilePath));
@@ -142,13 +159,26 @@ function Send-EntraUserMfaStatusReport
             saveToSentItems = 'true';
         };
 
-        # Write to log.
-        Write-CustomLog -Message ('Sending MFA status report to {0}' -f $EmailAddress) -Level Console -IndentLevel 1;
+        # If users count is zero.
+        if ($Users.Count -eq 0)
+        {
+            # Write to log.
+            Write-CustomLog -Message 'No users found for the MFA status report, skipping e-mail sending' -Level Warning;
+        }
+        # Else send the e-mail.
+        else
+        {
+            # Write to log.
+            Write-CustomLog -Message ("Sending MFA status report to '{0}'" -f $EmailAddress) -Level Verbose;
 
-        # A UPN can also be used as -UserId.
-        Send-MgUserMail -UserId (Get-EntraContext).Account -BodyParameter $params -ErrorAction Stop;
+            # A UPN can also be used as -UserId.
+            $null = Send-MgUserMail `
+                -UserId (Get-EntraContext).Account `
+                -BodyParameter $params `
+                -ErrorAction Stop;
+        }
     }
-    END
+    end
     {
         # Write to log.
         Write-CustomProgress @customProgress;

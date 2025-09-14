@@ -1,9 +1,9 @@
 @{
     # Script module or binary module file associated with this manifest.
-    RootModule           = 'SystemAdmins.MsEntraMfaToolbox.psm1';
+    RootModule           = 'SystemAdmins.MsMfaToolbox.psm1';
 
     # Version number of this module.
-    ModuleVersion        = '1.0.0';
+    ModuleVersion        = '2.0.0';
 
     # Supported PSEditions
     CompatiblePSEditions = @('Core');
@@ -21,10 +21,10 @@
     Copyright            = '2025 System Admins';
 
     # Description of the functionality provided by this module
-    Description          = 'Module for Microsoft Entra MFA related tasks';
+    Description          = 'Module for Microsoft MFA related tasks';
 
     # Minimum version of the PowerShell engine required by this module
-    PowerShellVersion = '7.0';
+    PowerShellVersion    = '7.2';
 
     # Name of the PowerShell host required by this module
     # PowerShellHostName = '';
@@ -42,7 +42,9 @@
     # ProcessorArchitecture = '';
 
     # Modules that must be imported into the global environment prior to importing this module
-    # RequiredModules = @();
+    RequiredModules      = @(
+        'Microsoft.Entra'
+    );
 
     # Assemblies that must be loaded prior to importing this module
     # RequiredAssemblies = @();
@@ -63,7 +65,11 @@
     # FunctionsToExport    = '*';
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-    CmdletsToExport      = '*';
+    CmdletsToExport      = @(
+        'Get-EidConditionalAccessPolicy',
+        'Get-EidUserMfaPolicy',
+        'Send-EidUserMfaReport'
+    );
 
     # Variables to export from this module
     # VariablesToExport    = '*';
@@ -85,16 +91,16 @@
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags = @("mfa", "entra", "it", "m365", "azuread", "entraid");
+            Tags       = @('mfa', 'microsoft', 'it', 'm365', 'azuread', 'entraid');
 
             # A URL to the license for this module.
             # LicenseUri = '';
 
             # A URL to the main website for this project.
-            ProjectUri = 'https://github.com/System-Admins/msentramfatoolbox';
+            ProjectUri = 'https://github.com/System-Admins/msmfatoolbox';
 
             # A URL to an icon representing this module.
-            IconUri = 'https://www.systemadmins.com/wp-content/uploads/2022/04/SA-logo.svg';
+            IconUri    = 'https://www.systemadmins.com/wp-content/uploads/2022/04/SA-logo.svg';
 
             # ReleaseNotes of this module
             # ReleaseNotes = '';
@@ -106,20 +112,14 @@
             # RequireLicenseAcceptance = $false;
 
             # External dependent modules of this module
-            ExternalModuleDependencies = @(
-                'Microsoft.Graph.Entra',
-                'Microsoft.Graph.Groups',
-                'Microsoft.Graph.Users',
-                'Microsoft.Graph.Users.Actions',
-                'Microsoft.Graph.Identity.DirectoryManagement'
-            );
+            #ExternalModuleDependencies = @();
 
         }; # End of PSData hashtable
 
     }; # End of PrivateData hashtable
 
     # HelpInfo URI of this module
-    HelpInfoURI = 'https://github.com/System-Admins/msentramfatoolbox';
+    HelpInfoURI          = 'https://github.com/System-Admins/msmfatoolbox';
 
     # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
     # DefaultCommandPrefix = '';

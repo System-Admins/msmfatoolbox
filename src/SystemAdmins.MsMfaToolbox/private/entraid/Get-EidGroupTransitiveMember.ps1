@@ -1,4 +1,4 @@
-function Get-EntraGroupMemberRecursive
+function Get-EidGroupTransitiveMember
 {
     <#
     .SYNOPSIS
@@ -8,13 +8,13 @@ function Get-EntraGroupMemberRecursive
     .PARAMETER Id
         Guid format such as "0ee5b3dc-f9ce-4414-b93b-aea03ef7e108" (without quotes).
     .EXAMPLE
-        Get-EntraGroupMemberRecursive -Id "0ee5b3dc-f9ce-4414-b93b-aea03ef7e108";
+       Get-EidGroupTransitiveMember -Id "0ee5b3dc-f9ce-4414-b93b-aea03ef7e108";
     #>
     [cmdletbinding()]
     [OutputType([System.Collections.ArrayList])]
     param
     (
-        # Backup path.
+        # Policy ID.
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Test-Guid -InputObject $_ })]
@@ -24,7 +24,7 @@ function Get-EntraGroupMemberRecursive
     BEGIN
     {
         # Write to log.
-        $customProgress = Write-CustomProgress -Activity $MyInvocation.MyCommand.Name -CurrentOperation ('Get Entra group transitive members ({0})' -f $Id);
+        $customProgress = Write-CustomProgress -Activity $MyInvocation.MyCommand.Name -CurrentOperation ('Retrieving Entra group transitive members ({0})' -f $Id);
 
         # Object array to store the group members.
         $groupMembers = New-Object -TypeName System.Collections.ArrayList;

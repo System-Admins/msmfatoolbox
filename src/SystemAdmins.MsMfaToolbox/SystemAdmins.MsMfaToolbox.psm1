@@ -66,7 +66,7 @@ $publicFunctions = $publicPs1Files.Basename;
 
 # Global variables.
 ## Module.
-$script:ModuleName = 'SystemAdmins.MsEntraMfaToolbox';
+$script:ModuleName = 'SystemAdmins.MsMfaToolbox';
 
 ## Logging.
 $script:ModuleTempFolderPath = ('{0}\{1}' -f ([System.IO.Path]::GetTempPath()), $script:ModuleName);
@@ -74,28 +74,29 @@ $script:ModuleLogFolder = ('{0}\Log' -f $script:ModuleTempFolderPath);
 $script:ModuleLogFileName = ('{0}_EntraMfaToolbox.log' -f (Get-Date -Format 'yyyyMMddHHmmss'));
 $script:ModuleLogPath = Join-Path -Path $ModuleLogFolder -ChildPath $ModuleLogFileName;
 
+# Required Microsoft Graph API scopes.
+$GraphApiScopes = @(
+    'Policy.Read.All',
+    'GroupMember.Read.All',
+    'User.Read.All',
+    'RoleManagement.Read.All'
+    'RoleManagement.Read.Directory',
+    'Mail.Send'
+);
+
 # Test the connection to Entra.
-$entraConnection = Test-EntraConnection;
+$entraConnection = Test-EidConnection `
+    -RequiredScope $GraphApiScopes;
 
 # If connection is not valid.
 if ($false -eq $entraConnection)
 {
     # Write to log.
-    Write-CustomLog -Message ('Please connect to Entra using the following code') -Level 'Warning' -NoLogLevel $true -NoDateTime;
-    Write-CustomLog -Message ("Connect-Entra -Scopes 'Policy.Read.All', 'GroupMember.Read.All', 'User.Read.All', 'RoleManagement.Read.All', 'Mail.Send' -NoWelcome") -Level 'Warning' -NoLogLevel $true -NoDateTime;
-    Write-CustomLog -Message ('After connecting to Entra, import the module again using the following') -Level 'Warning' -NoLogLevel $true -NoDateTime;
+    Write-CustomLog -Message ('Please connect to Entra using the following code:') -Level 'Warning' -NoLogLevel $true -NoDateTime;
+    Write-CustomLog -Message ("Connect-Entra -Scopes '{0}' -NoWelcome -ContextScope Process" -f ($GraphApiScopes -join "', '")) -Level 'Warning' -NoLogLevel $true -NoDateTime;
+    Write-CustomLog -Message ('After connecting to Entra, import the module again using the following:') -Level 'Warning' -NoLogLevel $true -NoDateTime;
     Write-CustomLog -Message ('Import-Module -Name "{0}"' -f $script:ModuleName) -Level 'Warning' -NoLogLevel $true -NoDateTime;
 
-    # throw exception.
-    throw ('No valid connection to Microsoft Entra');
+    # Throw exception.
+    throw ('Authentication needed. Please call Connect-Entra.');
 }
-
-# Foreach function in the public functions.
-foreach ($exportFunction in $publicFunctions)
-{
-    # Write to log.
-    Write-CustomLog -Message ("Exporting the function '{0}'" -f $exportFunction) -Level Verbose;
-}
-
-# Export functions.
-Export-ModuleMember -Function $publicFunctions;

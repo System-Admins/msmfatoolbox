@@ -246,7 +246,7 @@ function Write-CustomLog
                     Write-Host -Object $prefixMessage -NoNewline;
                 }
 
-
+                # Write to console.
                 Write-Host -Object $Message -ForegroundColor $Color;
             }
         }
