@@ -100,15 +100,3 @@ if ($false -eq $entraConnection)
     # Throw exception.
     throw ('Authentication needed. Please call Connect-Entra.');
 }
-
-# Foreach function in the public functions.
-foreach ($exportFunction in $publicFunctions)
-{
-    # Write to log.
-    Write-CustomLog -Message ("Exporting the function '{0}'" -f $exportFunction) -Level Verbose;
-}
-
-<# Export functions.
-Export-ModuleMember `
-    -Function $publicFunctions `
-    -ErrorAction SilentlyContinue;#>
