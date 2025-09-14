@@ -256,13 +256,13 @@ Array
   ```powershell
     # Get all installed modules.
     $installedModules = Get-InstalledModule;
-  
+
     # Foreach install module.
     foreach ($installedModule in $installedModules)
     {
         # Get all versions.
         $versions = Get-InstalledModule -Name $installedModule.Name -AllVersions;
-  
+
         # Foreach version.
         foreach ($version in $versions)
         {
@@ -276,7 +276,7 @@ Array
                     -Confirm:$false `
                     -ErrorAction Stop `
                     -WarningAction SilentlyContinue;
-  
+
                 # Write to log.
                 Write-Information `
                     -Message ("[SUCCESS] Removed module '{0}' version '{1}'" -f $version.Name, $version.Version) `
@@ -292,5 +292,5 @@ Array
         }
     }
   ```
-  
-  You can now try to run the [installation](#installation) again of this module
+
+  You can now try to run the [installation](#electric_plug-installation) again of this module
