@@ -247,7 +247,6 @@ function Write-CustomLog
                 }
 
 
-                # Write to console.
                 Write-Host -Object $Message -ForegroundColor $Color;
             }
         }
