@@ -312,12 +312,15 @@ Array
   
   # Required Microsoft Graph API scopes.
   $graphApiScopes = @(
-      'Policy.Read.All',
-      'GroupMember.Read.All',
-      'User.Read.All',
-      'RoleManagement.Read.All'
-      'RoleManagement.Read.Directory',
-      'Mail.Send'
+       'Policy.Read.All',
+       'GroupMember.Read.All',
+       'User.Read.All',
+       'RoleManagement.Read.All',
+       'RoleManagement.Read.Directory',
+       'Application.Read.All',
+       'Directory.Read.All',
+       'AuditLog.Read.All',
+       'Mail.Send'
   );
   
   # Get managed identity.
