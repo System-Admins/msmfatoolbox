@@ -10,7 +10,7 @@ This tool was originally developed to get users that are not fully protected by 
   - [Installation](#electric_plug-installation)
   - [Commands](#package-commands)
   - [Cmdlets](#cmdlets)
-    - [Send-EidUserMfaStatusReport](#Send-EntraUserMfaStatusReport)
+    - [Send-EidUserMfaReport](#Send-EntraUserMfaStatusReport)
     - [Get-EidUserMfaPolicy](#Get-EidUserMfaPolicy)
     - [Get-EidConditionalAccessPolicy](#Get-EidConditionalAccessPolicy)
 - [FAQ](#question-faq)
@@ -35,6 +35,9 @@ Before installing the module, the following prerequisites must be fulfilled:
    - 'User.Read.All'
    - 'RoleManagement.Read.All
    - 'RoleManagement.Read.Directory'
+   - 'Application.Read.All'
+   - 'Directory.Read.All'
+   - 'AuditLog.Read.All'
    - 'Mail.Send' (this is used to send a report)
 - [ ] When using a delegated user to run the module a Exchange Online license assigned to the account running the cmdlet (this is required to send an e-mail).
 
@@ -76,7 +79,7 @@ Before installing the module, the following prerequisites must be fulfilled:
 
 ## Cmdlets
 
-### Send-EidUserMfaStatusReport
+### Send-EidUserMfaReport
 
 #### Synopsis
 
@@ -86,20 +89,21 @@ Send a report about user MFA status in Microsoft Entra. The e-mail content only 
 
 | Type   | Parameter | Description                                                  | Optional | Accepted Values |
 | ------ | --------- | ------------------------------------------------------------ | -------- | --------------- |
-| String | To        | E-mail to who should receive the report. Defaults to logged-in user in Microsoft Entra. | True     | abc@contoso.com |
+| String | EmailAddress        | E-mail to who should receive the report. Defaults to logged-in user in Microsoft Entra. | True     | abc@contoso.com |
+| String | From        | E-mail to send from, the e-mail address must exist in the Microsoft 365 tenant. | false     | from@contoso.com |
 
 #### Example(s)
 
 Send a report about user MFA status in Microsoft Entra to logged-in user.
 
 ```powershell
-Send-EidUserMfaStatusReport
+Send-EidUserMfaReport
 ```
 
 Send a report about user MFA status in Microsoft Entra to abc@contoso.com.
 
 ```powershell
-Send-EidUserMfaStatusReport -EmailAddress 'abc@contoso.com'
+Send-EidUserMfaReport -EmailAddress 'abc@contoso.com'
 ```
 
 ### Output
@@ -308,12 +312,15 @@ Array
   
   # Required Microsoft Graph API scopes.
   $graphApiScopes = @(
-      'Policy.Read.All',
-      'GroupMember.Read.All',
-      'User.Read.All',
-      'RoleManagement.Read.All'
-      'RoleManagement.Read.Directory',
-      'Mail.Send'
+       'Policy.Read.All',
+       'GroupMember.Read.All',
+       'User.Read.All',
+       'RoleManagement.Read.All',
+       'RoleManagement.Read.Directory',
+       'Application.Read.All',
+       'Directory.Read.All',
+       'AuditLog.Read.All',
+       'Mail.Send'
   );
   
   # Get managed identity.
