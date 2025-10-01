@@ -392,7 +392,7 @@ Array
        'Microsoft.Graph.Reports'                        = '2.25.0';
        'Microsoft.Graph.Users'                          = '2.25.0';
        'Microsoft.Graph.Users.Actions'                  = '2.25.0';
-       'SystemAdmins.MsMfaToolbox'                      = '2.0.0';
+       'SystemAdmins.MsMfaToolbox'                      = '2.0.1';
    };
    
    # Connect to Azure account.
