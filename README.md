@@ -60,7 +60,7 @@ Before installing the module, the following prerequisites must be fulfilled:
 3. Login to Microsoft Entra using the following.
 
    ```powershell
-   Connect-Entra -Scopes 'Policy.Read.All', 'GroupMember.Read.All', 'User.Read.All', 'RoleManagement.Read.All', 'RoleManagement.Read.Directory', 'Mail.Send' -NoWelcome -ContextScope Process;
+   Connect-Entra -Scopes 'Policy.Read.All', 'GroupMember.Read.All', 'User.Read.All', 'RoleManagement.Read.All', 'RoleManagement.Read.Directory', 'Application.Read.All', 'Directory.Read.All', 'AuditLog.Read.All', 'Mail.Send' -NoWelcome -ContextScope Process;
    ```
 
 4. Open a new PowerShell 7 session, and run one of the cmdlets.
