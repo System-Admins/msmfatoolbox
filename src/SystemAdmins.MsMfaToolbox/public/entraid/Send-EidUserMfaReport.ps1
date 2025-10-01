@@ -18,7 +18,12 @@ function Send-EidUserMfaReport
         # E-mail address to send the report.
         [Parameter(Mandatory = $false)]
         [ValidateScript({ Test-EmailAddress -InputObject $_ })]
-        [string]$EmailAddress = ((Get-EntraContext).Account)
+        [string]$EmailAddress = ((Get-EntraContext).Account),
+
+        # E-mail address to send from (e-mail must exist in the tenant).
+        [Parameter(Mandatory = $false)]
+        [ValidateScript({ Test-EmailAddress -InputObject $_ })]
+        [string]$From
     )
 
     begin
@@ -28,6 +33,13 @@ function Send-EidUserMfaReport
 
         # Get Entra user MFA status.
         $users = Get-EidUserMfaPolicy;
+
+        # If from address is not specified, use the email address from the context.
+        if ([string]::IsNullOrEmpty($From))
+        {
+            # Use the email address from the context.
+            $From = (Get-EntraContext).Account;
+        }
 
         # Import header and footer.
         $header = Get-Content -Path (Join-Path -Path $Script:scriptPath -ChildPath 'private\assets\send-eidusermfareport\header.html');
@@ -173,7 +185,7 @@ function Send-EidUserMfaReport
 
             # A UPN can also be used as -UserId.
             $null = Send-MgUserMail `
-                -UserId (Get-EntraContext).Account `
+                -UserId $From `
                 -BodyParameter $params `
                 -ErrorAction Stop;
         }
