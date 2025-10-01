@@ -294,3 +294,128 @@ Array
   ```
 
   You can now try to run the [installation](#electric_plug-installation) again of this module
+
+- **If you need to assign permission scopes to a managed identity, you can run the following:**
+
+  ```powershell
+  # Managed Identity Display Name.
+  $managedIdentityObjectId = 'OBJECT ID OF THE MANAGED IDENTITY';
+  
+  # Connect to Microsoft Graph (delegated permissions).
+  Connect-MgGraph `
+      -Scopes @('Directory.ReadWrite.All', 'AppRoleAssignment.ReadWrite.All') `
+      -ContextScope Process;
+  
+  # Required Microsoft Graph API scopes.
+  $graphApiScopes = @(
+      'Policy.Read.All',
+      'GroupMember.Read.All',
+      'User.Read.All',
+      'RoleManagement.Read.All'
+      'RoleManagement.Read.Directory',
+      'Mail.Send'
+  );
+  
+  # Get managed identity.
+  $managedIdentity = Get-MgServicePrincipal `
+      -Filter "Id eq '$managedIdentityObjectId'";
+  
+  # Get Graph Service Principal.
+  $graphSPN = Get-MgServicePrincipal `
+      -Filter "AppId eq '00000003-0000-0000-c000-000000000000'";
+  
+  # Foreach required permission, assign to managed identity.
+  foreach ($graphApiScope in $graphApiScopes)
+  {
+      # Get app role for permission.
+      $appRole = $graphSPN.AppRoles |
+          Where-Object { $_.Value -eq $graphApiScope } |
+              Where-Object { $_.AllowedMemberTypes -contains 'Application' };
+  
+      # If app role not found.
+      if ($null -eq $appRole)
+      {
+          # Continue to next permission.
+          continue;
+      }
+  
+      # Create app role assignment.
+      $bodyParam = @{
+          PrincipalId = $managedIdentity.Id
+          ResourceId  = $graphSPN.Id
+          AppRoleId   = $appRole.Id
+      }
+  
+      # Assign app role to managed identity.
+      New-MgServicePrincipalAppRoleAssignment `
+          -ServicePrincipalId $managedIdentity.Id `
+          -BodyParameter $bodyParam;
+  }
+  ```
+  
+- **If you need to install the required modules into a Azure Automation Account, use the following:**
+
+   ```powershell
+   # Automation account details.
+   $subscriptionId = 'xxxxxx-xxxxxx-xxxx-xxxx-xxxxxxxxxx';
+   $resourceGroupName = 'resourceGroupName';
+   $automationAccountName = 'automationAccountName';
+   
+   # Install module.
+   Install-Module -Name 'Az.Accounts', 'Az.Automation' -Scope CurrentUser -Force -AllowClobber;
+   
+   # Modules to install.
+   $modulesToInstall = @{
+       'Microsoft.Entra'                                = '1.0.12';
+       'Microsoft.Entra.Applications'                   = '1.0.12';
+       'Microsoft.Entra.Authentication'                 = '1.0.12';
+       'Microsoft.Entra.CertificateBasedAuthentication' = '1.0.12';
+       'Microsoft.Entra.DirectoryManagement'            = '1.0.12';
+       'Microsoft.Entra.Governance'                     = '1.0.12';
+       'Microsoft.Entra.Groups'                         = '1.0.12';
+       'Microsoft.Entra.Reports'                        = '1.0.12';
+       'Microsoft.Entra.SignIns'                        = '1.0.12';
+       'Microsoft.Entra.Users'                          = '1.0.12';
+       'Microsoft.Graph.Applications'                   = '2.25.0';
+       'Microsoft.Graph.Authentication'                 = '2.25.0';
+       'Microsoft.Graph.Groups'                         = '2.25.0';
+       'Microsoft.Graph.Identity.DirectoryManagement'   = '2.25.0';
+       'Microsoft.Graph.Identity.Governance'            = '2.25.0';
+       'Microsoft.Graph.Identity.SignIns'               = '2.25.0';
+       'Microsoft.Graph.Reports'                        = '2.25.0';
+       'Microsoft.Graph.Users'                          = '2.25.0';
+       'Microsoft.Graph.Users.Actions'                  = '2.25.0';
+       'SystemAdmins.MsMfaToolbox'                      = '2.0.0';
+   };
+   
+   # Connect to Azure account.
+   Connect-AzAccount -Subscription $subscriptionId;
+   
+   # Foreach module.
+   foreach ($moduleToInstall in $modulesToInstall.GetEnumerator())
+   {
+       # Get module name and version.
+       $moduleName = $moduleToInstall.Key;
+       $moduleVersion = $moduleToInstall.Value;
+   
+   
+       # Try to install module.
+       try
+       {
+           # Install module.
+           New-AzAutomationModule -AutomationAccountName $automationAccountName -ResourceGroupName $resourceGroupName -Name $moduleName -ContentLinkUri "https://www.powershellgallery.com/api/v2/package/$moduleName/$moduleVersion" -RuntimeVersion '7.2' -ErrorAction Stop;
+   
+           # Write to host.
+           Write-Host "Module $moduleName version $moduleVersion installed successfully";
+       }
+       # Something went wrong.
+       catch
+       {
+           # Write to host.
+           Write-Host "Module $moduleName version $moduleVersion could not be installed";
+       }
+   }
+   
+   ```
+
+   
