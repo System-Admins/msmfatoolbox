@@ -86,7 +86,8 @@ Send a report about user MFA status in Microsoft Entra. The e-mail content only 
 
 | Type   | Parameter | Description                                                  | Optional | Accepted Values |
 | ------ | --------- | ------------------------------------------------------------ | -------- | --------------- |
-| String | To        | E-mail to who should receive the report. Defaults to logged-in user in Microsoft Entra. | True     | abc@contoso.com |
+| String | EmailAddress        | E-mail to who should receive the report. Defaults to logged-in user in Microsoft Entra. | True     | abc@contoso.com |
+| String | From        | E-mail to send from, the e-mail address must exist in the Microsoft 365 tenant. | false     | from@contoso.com |
 
 #### Example(s)
 
