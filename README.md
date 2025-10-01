@@ -35,6 +35,9 @@ Before installing the module, the following prerequisites must be fulfilled:
    - 'User.Read.All'
    - 'RoleManagement.Read.All
    - 'RoleManagement.Read.Directory'
+   - 'Application.Read.All'
+   - 'Directory.Read.All'
+   - 'AuditLog.Read.All'
    - 'Mail.Send' (this is used to send a report)
 - [ ] When using a delegated user to run the module a Exchange Online license assigned to the account running the cmdlet (this is required to send an e-mail).
 
