@@ -9,6 +9,9 @@ function Send-EidUserMfaReport
         E-mail address to send the report.
     .EXAMPLE
         Send-EidUserMfaReport -EmailAddress 'abc@contoso.com';
+    .EXAMPLE
+        # Send from a specific e-mail address.
+        Send-EidUserMfaReport -From "from@contoso.com" -EmailAddress 'to@contoso.com';
     #>
     [cmdletbinding()]
     [OutputType([void])]
