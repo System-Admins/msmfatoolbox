@@ -62,7 +62,7 @@ foreach ($ps1File in $ps1Files)
 Write-CustomLog -Message ("Script path is '{0}'" -f $scriptPath) -Level Verbose;
 
 # Get all the functions in the public section.
-$publicFunctions = $publicPs1Files.Basename;
+#$publicFunctions = $publicPs1Files.Basename;
 
 # Global variables.
 ## Module.
@@ -74,29 +74,33 @@ $script:ModuleLogFolder = ('{0}\Log' -f $script:ModuleTempFolderPath);
 $script:ModuleLogFileName = ('{0}_EntraMfaToolbox.log' -f (Get-Date -Format 'yyyyMMddHHmmss'));
 $script:ModuleLogPath = Join-Path -Path $ModuleLogFolder -ChildPath $ModuleLogFileName;
 
-# Required Microsoft Graph API scopes.
-$GraphApiScopes = @(
-    'Policy.Read.All',
-    'GroupMember.Read.All',
-    'User.Read.All',
-    'RoleManagement.Read.All'
-    'RoleManagement.Read.Directory',
-    'Mail.Send'
-);
-
-# Test the connection to Entra.
-$entraConnection = Test-EidConnection `
-    -RequiredScope $GraphApiScopes;
-
-# If connection is not valid.
-if ($false -eq $entraConnection)
+# If running in interactive mode.
+if (-not [Environment]::GetCommandLineArgs().Contains('-NonInteractive'))
 {
-    # Write to log.
-    Write-CustomLog -Message ('Please connect to Entra using the following code:') -Level 'Warning' -NoLogLevel $true -NoDateTime;
-    Write-CustomLog -Message ("Connect-Entra -Scopes '{0}' -NoWelcome -ContextScope Process" -f ($GraphApiScopes -join "', '")) -Level 'Warning' -NoLogLevel $true -NoDateTime;
-    Write-CustomLog -Message ('After connecting to Entra, import the module again using the following:') -Level 'Warning' -NoLogLevel $true -NoDateTime;
-    Write-CustomLog -Message ('Import-Module -Name "{0}"' -f $script:ModuleName) -Level 'Warning' -NoLogLevel $true -NoDateTime;
+    # Required Microsoft Graph API scopes.
+    $GraphApiScopes = @(
+        'Policy.Read.All',
+        'GroupMember.Read.All',
+        'User.Read.All',
+        'RoleManagement.Read.All'
+        'RoleManagement.Read.Directory',
+        'Mail.Send'
+    );
 
-    # Throw exception.
-    throw ('Authentication needed. Please call Connect-Entra.');
+    # Test the connection to Entra.
+    $entraConnection = Test-EidConnection `
+        -RequiredScope $GraphApiScopes;
+
+    # If connection is not valid.
+    if ($false -eq $entraConnection)
+    {
+        # Write to log.
+        Write-CustomLog -Message ('Please connect to Entra using the following code:') -Level 'Warning' -NoLogLevel $true -NoDateTime;
+        Write-CustomLog -Message ("Connect-Entra -Scopes '{0}' -NoWelcome -ContextScope Process" -f ($GraphApiScopes -join "', '")) -Level 'Warning' -NoLogLevel $true -NoDateTime;
+        Write-CustomLog -Message ('After connecting to Entra, import the module again using the following:') -Level 'Warning' -NoLogLevel $true -NoDateTime;
+        Write-CustomLog -Message ('Import-Module -Name "{0}"' -f $script:ModuleName) -Level 'Warning' -NoLogLevel $true -NoDateTime;
+
+        # Throw exception.
+        throw ('Authentication needed. Please call Connect-Entra.');
+    }
 }
