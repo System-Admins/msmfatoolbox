@@ -45,8 +45,7 @@ Before installing the module, the following prerequisites must be fulfilled:
 1. To install the module and it dependencies, run the following in a PowerShell 7 session:
 
    ```powershell
-   Install-Module -Name 'Microsoft.Entra' -Scope CurrentUser -Force -AllowClobber;
-   Install-Module -Name 'SystemAdmins.MsMfaToolbox' -Scope CurrentUser -Force;
+   Install-Module -Name 'Microsoft.Entra', 'SystemAdmins.MsMfaToolbox' -Scope CurrentUser -Force -AllowClobber;
    ```
 
    > **Note:** If there is already some PowerShell Microsoft Graph modules installed, they may conflict with the Microsoft.Entra module, please uninstall all installed modules to ensure a smooth run, see FAQ on how to uninstall those. Also make sure that after installing the dependencies, it's required to close the PowerShell session and open a new one to ensure now assemblies is loaded.
@@ -66,7 +65,7 @@ Before installing the module, the following prerequisites must be fulfilled:
 4. Open a new PowerShell 7 session, and run one of the cmdlets.
 
    ```powershell
-   Send-EidUserMfaStatusReport -EmailAddress 'abc@contoso.com';
+   Send-EidUserMfaReport -EmailAddress 'abc@contoso.com';
    ```
 
 5. When you are finished with running the cmdlet(s) you can run the following to logout from the Microsoft 365 in the PowerShell 7 session.
@@ -190,6 +189,8 @@ Array
    'RoleManagement.Read.Directory'
 
    'MailboxSettings.Read'
+
+   'AuditLog.Read.All'
 
    'Mail.Send'
 
@@ -392,7 +393,7 @@ Array
        'Microsoft.Graph.Reports'                        = '2.25.0';
        'Microsoft.Graph.Users'                          = '2.25.0';
        'Microsoft.Graph.Users.Actions'                  = '2.25.0';
-       'SystemAdmins.MsMfaToolbox'                      = '2.0.1';
+       'SystemAdmins.MsMfaToolbox'                      = '2.0.2';
    };
    
    # Connect to Azure account.
