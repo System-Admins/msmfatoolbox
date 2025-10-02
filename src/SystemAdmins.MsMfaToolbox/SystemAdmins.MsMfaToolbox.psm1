@@ -74,20 +74,30 @@ $script:ModuleLogFolder = ('{0}\Log' -f $script:ModuleTempFolderPath);
 $script:ModuleLogFileName = ('{0}_EntraMfaToolbox.log' -f (Get-Date -Format 'yyyyMMddHHmmss'));
 $script:ModuleLogPath = Join-Path -Path $ModuleLogFolder -ChildPath $ModuleLogFileName;
 
-# If running in interactive mode.
-if (-not [Environment]::GetCommandLineArgs().Contains('-NonInteractive'))
+# If running in non-interactive mode.
+if ((-not [Environment]::UserInteractive) -or
+    ([Environment]::GetCommandLineArgs() -match 'NonInteractive'))
 {
+    # Write to log.
+    Write-CustomLog -Message ('Running in non-interactive mode, skipping the connection test') -Level 'Verbose';
+}
+# Else we are running in interactive mode.
+else
+{
+    # Write to log.
+    Write-CustomLog -Message ('Running in interactive mode') -Level 'Verbose';
+
     # Required Microsoft Graph API scopes.
     $GraphApiScopes = @(
-       'Policy.Read.All',
-       'GroupMember.Read.All',
-       'User.Read.All',
-       'RoleManagement.Read.All',
-       'RoleManagement.Read.Directory',
-       'Application.Read.All',
-       'Directory.Read.All',
-       'AuditLog.Read.All',
-       'Mail.Send'
+        'Policy.Read.All',
+        'GroupMember.Read.All',
+        'User.Read.All',
+        'RoleManagement.Read.All',
+        'RoleManagement.Read.Directory',
+        'Application.Read.All',
+        'Directory.Read.All',
+        'AuditLog.Read.All',
+        'Mail.Send'
     );
 
     # Test the connection to Entra.
