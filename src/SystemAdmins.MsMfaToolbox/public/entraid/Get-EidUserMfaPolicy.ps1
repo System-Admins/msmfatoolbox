@@ -115,6 +115,15 @@ function Get-EidUserMfaPolicy
                     # Add the conditional access policy to the object array.
                     $policiesTargetingUser += $conditionalAccessPolicy;
                 }
+                # Else if the user is a guest user and the conditional access policy don't exclude any guests.
+                elseif ($entraUser.userType -eq 'Guest' -and $conditionalAccessPolicy.Users.ExcludeGuestsOrExternalUsersTypes.Count -eq 0)
+                {
+                    # Write to log.
+                    Write-CustomLog -Message ("Guest user '{0}' is targeted by conditional access policy '{1}'" -f $entraUser.UserPrincipalName, $conditionalAccessPolicy.DisplayName) -Level 'Verbose';
+
+                    # Add the conditional access policy to the object array.
+                    $policiesTargetingUser += $conditionalAccessPolicy;
+                }
                 # Else user is not targeted by the conditional access policy.
                 else
                 {
