@@ -10,7 +10,7 @@ This tool was originally developed to get users that are not fully protected by 
   - [Installation](#electric_plug-installation)
   - [Commands](#package-commands)
   - [Cmdlets](#cmdlets)
-    - [Send-EidUserMfaReport](#Send-EntraUserMfaStatusReport)
+    - [Send-EidUserMfaReport](#send-eidusermfareport)
     - [Get-EidUserMfaPolicy](#Get-EidUserMfaPolicy)
     - [Get-EidConditionalAccessPolicy](#Get-EidConditionalAccessPolicy)
 - [FAQ](#question-faq)
