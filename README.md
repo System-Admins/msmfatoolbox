@@ -88,7 +88,7 @@ Send a report about user MFA status in Microsoft Entra. The e-mail content only 
 
 | Type   | Parameter | Description                                                  | Optional | Accepted Values |
 | ------ | --------- | ------------------------------------------------------------ | -------- | --------------- |
-| String | EmailAddress        | E-mail to who should receive the report. Defaults to logged-in user in Microsoft Entra. | True     | abc@contoso.com |
+| String[] | EmailAddress        | E-mail to who should receive the report. Defaults to logged-in user in Microsoft Entra. | True     | abc@contoso.com |
 | String | From        | E-mail to send from, the e-mail address must exist in the Microsoft 365 tenant. | false     | from@contoso.com |
 
 #### Example(s)
@@ -102,7 +102,7 @@ Send-EidUserMfaReport
 Send a report about user MFA status in Microsoft Entra to abc@contoso.com.
 
 ```powershell
-Send-EidUserMfaReport -EmailAddress 'abc@contoso.com'
+Send-EidUserMfaReport -EmailAddress 'abc@contoso.com', 'def@contoso.com'
 ```
 
 ### Output
@@ -393,7 +393,7 @@ Array
        'Microsoft.Graph.Reports'                        = '2.25.0';
        'Microsoft.Graph.Users'                          = '2.25.0';
        'Microsoft.Graph.Users.Actions'                  = '2.25.0';
-       'SystemAdmins.MsMfaToolbox'                      = '2.0.3';
+       'SystemAdmins.MsMfaToolbox'                      = '2.0.4';
    };
    
    # Connect to Azure account.
