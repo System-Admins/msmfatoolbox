@@ -20,8 +20,8 @@ function Send-EidUserMfaReport
     (
         # E-mail address to send the report.
         [Parameter(Mandatory = $false)]
-        [ValidateScript({ Test-EmailAddress -InputObject $_ })]
-        [string]$EmailAddress = ((Get-EntraContext).Account),
+        [ValidateScript({ ForEach-Object { Test-EmailAddress -InputObject $_ } })]
+        [string[]]$EmailAddress = ((Get-EntraContext).Account),
 
         # E-mail address to send from (e-mail must exist in the tenant).
         [Parameter(Mandatory = $false)]
@@ -147,6 +147,20 @@ function Send-EidUserMfaReport
         # Convert CSV to Base64.
         $attachment = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($outputFilePath));
 
+        # Create toRecipients array.
+        $toRecipients = @();
+
+        # Foreach to e-mail address.
+        foreach ($toRecipient in $EmailAddress)
+        {
+            # Construct toRecipients array.
+            $toRecipients += @{
+                emailAddress = @{
+                    address = $toRecipient;
+                };
+            };
+        }
+
         # Create parameters for sending the e-mail.
         $params = @{
             message         = @{
@@ -155,13 +169,7 @@ function Send-EidUserMfaReport
                     contentType = 'HTML';
                     content     = $html;
                 };
-                toRecipients = @(
-                    @{
-                        emailAddress = @{
-                            address = $EmailAddress;
-                        };
-                    }
-                );
+                toRecipients = $toRecipients;
                 attachments  = @(
                     @{
                         '@odata.type' = '#microsoft.graph.fileAttachment';
