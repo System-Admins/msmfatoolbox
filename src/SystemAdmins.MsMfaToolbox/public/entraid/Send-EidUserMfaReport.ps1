@@ -15,7 +15,6 @@ function Send-EidUserMfaReport
     #>
     [cmdletbinding()]
     [OutputType([void])]
-    [ValidateScript({ $_ -match '' })]
     param
     (
         # E-mail address to send the report.
