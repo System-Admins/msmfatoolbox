@@ -22,6 +22,11 @@ function Send-EidUserMfaReport
         [ValidateScript({ ForEach-Object { Test-EmailAddress -InputObject $_ } })]
         [string[]]$EmailAddress = ((Get-EntraContext).Account),
 
+        # Subject in the e-mail to send.
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(1, 998)]
+        [string]$Subject = ('Microsoft 365 User MFA Status Report - {0}' -f (Get-Date -Format 'yyyy-MM-dd')),
+
         # E-mail address to send from (e-mail must exist in the tenant).
         [Parameter(Mandatory = $false)]
         [ValidateScript({ Test-EmailAddress -InputObject $_ })]
@@ -163,7 +168,7 @@ function Send-EidUserMfaReport
         # Create parameters for sending the e-mail.
         $params = @{
             message         = @{
-                subject      = ('Microsoft 365 User MFA Status Report - {0}' -f (Get-Date -Format 'yyyy-MM-dd'));
+                subject      = $Subject;
                 body         = @{
                     contentType = 'HTML';
                     content     = $html;
