@@ -7,11 +7,18 @@ function Send-EidUserMfaReport
         Collects Entra user MFA status and sends a report to the specified e-mail address.
     .PARAMETER EmailAddress
         E-mail address to send the report.
+    .PARAMETER From
+        The from e-mail address.
+    .PARAMETER Subject
+        Subject used in the e-mail.
     .EXAMPLE
         Send-EidUserMfaReport -EmailAddress 'abc@contoso.com';
     .EXAMPLE
         # Send from a specific e-mail address.
         Send-EidUserMfaReport -From "from@contoso.com" -EmailAddress 'to@contoso.com';
+    .EXAMPLE
+        # Send e-mail with specific subject.
+        Send-EidUserMfaReport -Subject "Contoso M365 MFA Findings" -EmailAddress 'to@contoso.com';
     #>
     [cmdletbinding()]
     [OutputType([void])]
