@@ -7,11 +7,18 @@ function Send-EidUserMfaReport
         Collects Entra user MFA status and sends a report to the specified e-mail address.
     .PARAMETER EmailAddress
         E-mail address to send the report.
+    .PARAMETER From
+        The from e-mail address.
+    .PARAMETER Subject
+        Subject used in the e-mail.
     .EXAMPLE
         Send-EidUserMfaReport -EmailAddress 'abc@contoso.com';
     .EXAMPLE
         # Send from a specific e-mail address.
         Send-EidUserMfaReport -From "from@contoso.com" -EmailAddress 'to@contoso.com';
+    .EXAMPLE
+        # Send e-mail with specific subject.
+        Send-EidUserMfaReport -Subject "Contoso M365 MFA Findings" -EmailAddress 'to@contoso.com';
     #>
     [cmdletbinding()]
     [OutputType([void])]
@@ -21,6 +28,11 @@ function Send-EidUserMfaReport
         [Parameter(Mandatory = $false)]
         [ValidateScript({ ForEach-Object { Test-EmailAddress -InputObject $_ } })]
         [string[]]$EmailAddress = ((Get-EntraContext).Account),
+
+        # Subject in the e-mail to send.
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(1, 998)]
+        [string]$Subject = ('Microsoft 365 User MFA Status Report - {0}' -f (Get-Date -Format 'yyyy-MM-dd')),
 
         # E-mail address to send from (e-mail must exist in the tenant).
         [Parameter(Mandatory = $false)]
@@ -163,7 +175,7 @@ function Send-EidUserMfaReport
         # Create parameters for sending the e-mail.
         $params = @{
             message         = @{
-                subject      = ('Microsoft 365 User MFA Status Report - {0}' -f (Get-Date -Format 'yyyy-MM-dd'));
+                subject      = $Subject;
                 body         = @{
                     contentType = 'HTML';
                     content     = $html;
