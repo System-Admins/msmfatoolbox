@@ -31,7 +31,6 @@ function Send-EidUserMfaReport
 
         # Subject in the e-mail to send.
         [Parameter(Mandatory = $false)]
-        [ValidateRange(1, 998)]
         [string]$Subject = ('Microsoft 365 User MFA Status Report - {0}' -f (Get-Date -Format 'yyyy-MM-dd')),
 
         # E-mail address to send from (e-mail must exist in the tenant).
