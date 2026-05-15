@@ -58,8 +58,17 @@ function Send-EidUserMfaReport
         # Write to log.
         $customProgress = Write-CustomProgress -Activity $MyInvocation.MyCommand.Name -CurrentOperation 'Sending Entra user MFA status report';
 
-        # Get Entra user MFA status.
-        $users = Get-EidUserMfaPolicy;
+        # If exempt groups are specified.
+        if ($ExemptGroups.Count -gt 0)
+        {
+            # Get Entra user MFA status with exempt groups.
+            $users = Get-EidUserMfaPolicy -ExemptGroups $ExemptGroups;
+        }
+        else
+        {
+            # Get Entra user MFA status.
+            $users = Get-EidUserMfaPolicy;
+        }
 
         # If from address is not specified, use the email address from the context.
         if ([string]::IsNullOrEmpty($From))
