@@ -90,6 +90,8 @@ Send a report about user MFA status in Microsoft Entra. The e-mail content only 
 | ------ | --------- | ------------------------------------------------------------ | -------- | --------------- |
 | String[] | EmailAddress        | E-mail to who should receive the report. Defaults to logged-in user in Microsoft Entra. | True     | abc@contoso.com |
 | String | From        | E-mail to send from, the e-mail address must exist in the Microsoft 365 tenant. | false     | from@contoso.com |
+| String | Subject     | Subject of the e-mail. Defaults to "Microsoft Entra MFA Report". | True     | N/A             |
+| String | OutputFileName | Name of the output file attached to the e-mail, defaults to "MFAReport.csv". | True     | N/A             |
 
 #### Example(s)
 
@@ -119,10 +121,11 @@ Get all users and if they are targeted by a Entra Conditional Access that requir
 
 #### Parameter(s)
 
-| Type   | Parameter         | Description                                    | Optional | Accepted Values |
-| ------ | ----------------- | ---------------------------------------------- | -------- | --------------- |
-| String | UserPrincipalName | If not specified, all users are returned.      | True     | abc@contoso.com |
-| Switch | OnlyEnabled       | If specified, only enabled users are returned. | True     | N/A             |
+| Type     | Parameter         | Description                                    | Optional | Accepted Values |
+| ------   | ----------------- | ---------------------------------------------- | -------- | --------------- |
+| String   | UserPrincipalName | If not specified, all users are returned.      | True     | abc@contoso.com |
+| Switch   | OnlyEnabled       | If specified, only enabled users are returned. | True     | N/A             |
+| String[] | ExemptGroups      | Exempt groups to flag users in the report (users that are members of any of the specified groups will be flagged in the report as exempt from MFA). | True     | MS_NO_MFA_TRUSTED_CLOUD, MS_NO_MFA_TRUSTED |
 
 #### Example(s)
 
@@ -261,13 +264,13 @@ Array
   ```powershell
     # Get all installed modules.
     $installedModules = Get-InstalledModule;
-  
+
     # Foreach install module.
     foreach ($installedModule in $installedModules)
     {
         # Get all versions.
         $versions = Get-InstalledModule -Name $installedModule.Name -AllVersions;
-  
+
         # Foreach version.
         foreach ($version in $versions)
         {
@@ -281,7 +284,7 @@ Array
                     -Confirm:$false `
                     -ErrorAction Stop `
                     -WarningAction SilentlyContinue;
-  
+
                 # Write to log.
                 Write-Information `
                     -Message ("[SUCCESS] Removed module '{0}' version '{1}'" -f $version.Name, $version.Version) `
@@ -305,12 +308,12 @@ Array
   ```powershell
   # Managed Identity Display Name.
   $managedIdentityObjectId = 'OBJECT ID OF THE MANAGED IDENTITY';
-  
+
   # Connect to Microsoft Graph (delegated permissions).
   Connect-MgGraph `
       -Scopes @('Directory.ReadWrite.All', 'AppRoleAssignment.ReadWrite.All') `
       -ContextScope Process;
-  
+
   # Required Microsoft Graph API scopes.
   $graphApiScopes = @(
        'Policy.Read.All',
@@ -323,15 +326,15 @@ Array
        'AuditLog.Read.All',
        'Mail.Send'
   );
-  
+
   # Get managed identity.
   $managedIdentity = Get-MgServicePrincipal `
       -Filter "Id eq '$managedIdentityObjectId'";
-  
+
   # Get Graph Service Principal.
   $graphSPN = Get-MgServicePrincipal `
       -Filter "AppId eq '00000003-0000-0000-c000-000000000000'";
-  
+
   # Foreach required permission, assign to managed identity.
   foreach ($graphApiScope in $graphApiScopes)
   {
@@ -339,28 +342,28 @@ Array
       $appRole = $graphSPN.AppRoles |
           Where-Object { $_.Value -eq $graphApiScope } |
               Where-Object { $_.AllowedMemberTypes -contains 'Application' };
-  
+
       # If app role not found.
       if ($null -eq $appRole)
       {
           # Continue to next permission.
           continue;
       }
-  
+
       # Create app role assignment.
       $bodyParam = @{
           PrincipalId = $managedIdentity.Id
           ResourceId  = $graphSPN.Id
           AppRoleId   = $appRole.Id
       }
-  
+
       # Assign app role to managed identity.
       New-MgServicePrincipalAppRoleAssignment `
           -ServicePrincipalId $managedIdentity.Id `
           -BodyParameter $bodyParam;
   }
   ```
-  
+
 - **If you need to install the required modules into a Azure Automation Account, use the following:**
 
    ```powershell
@@ -368,10 +371,10 @@ Array
    $subscriptionId = 'xxxxxx-xxxxxx-xxxx-xxxx-xxxxxxxxxx';
    $resourceGroupName = 'resourceGroupName';
    $automationAccountName = 'automationAccountName';
-   
+
    # Install module.
    Install-Module -Name 'Az.Accounts', 'Az.Automation' -Scope CurrentUser -Force -AllowClobber;
-   
+
    # Modules to install.
    $modulesToInstall = @{
        'Microsoft.Entra'                                = '1.0.12';
@@ -393,26 +396,26 @@ Array
        'Microsoft.Graph.Reports'                        = '2.25.0';
        'Microsoft.Graph.Users'                          = '2.25.0';
        'Microsoft.Graph.Users.Actions'                  = '2.25.0';
-       'SystemAdmins.MsMfaToolbox'                      = '2.0.6';
+       'SystemAdmins.MsMfaToolbox'                      = '2.0.7';
    };
-   
+
    # Connect to Azure account.
    Connect-AzAccount -Subscription $subscriptionId;
-   
+
    # Foreach module.
    foreach ($moduleToInstall in $modulesToInstall.GetEnumerator())
    {
        # Get module name and version.
        $moduleName = $moduleToInstall.Key;
        $moduleVersion = $moduleToInstall.Value;
-   
-   
+
+
        # Try to install module.
        try
        {
            # Install module.
            New-AzAutomationModule -AutomationAccountName $automationAccountName -ResourceGroupName $resourceGroupName -Name $moduleName -ContentLinkUri "https://www.powershellgallery.com/api/v2/package/$moduleName/$moduleVersion" -RuntimeVersion '7.2' -ErrorAction Stop;
-   
+
            # Write to host.
            Write-Host "Module $moduleName version $moduleVersion installed successfully";
        }
@@ -423,7 +426,7 @@ Array
            Write-Host "Module $moduleName version $moduleVersion could not be installed";
        }
    }
-   
+
    ```
 
-   
+

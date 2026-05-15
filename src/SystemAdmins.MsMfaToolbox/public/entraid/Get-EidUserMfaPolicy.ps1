@@ -10,6 +10,8 @@ function Get-EidUserMfaPolicy
         If not specified, all users are returned.
     .PARAMETER OnlyEnabled
         If specified, only enabled users are returned.
+    .PARAMETER ExemptGroups
+        Exempt groups to flag users in the report (users that are members of any of the specified groups will be flagged in the report as exempt from MFA).
     .EXAMPLE
         Get-EidUserMfaPolicy;
     #>
@@ -25,7 +27,11 @@ function Get-EidUserMfaPolicy
 
         # Only enabled users.
         [Parameter(Mandatory = $false, Position = 1, ValueFromPipelineByPropertyName = $true)]
-        [switch]$OnlyEnabled
+        [switch]$OnlyEnabled,
+
+        # Exempt groups to flag users in the report (users that are members of any of the specified groups will be flagged in the report as exempt from MFA).
+        [Parameter(Mandatory = $false)]
+        [string[]]$ExemptGroups
     )
 
     begin
@@ -58,11 +64,31 @@ function Get-EidUserMfaPolicy
             $entraUsers = (Get-EntraUser -Property $entraUserProperties -All);
         }
 
+        # Object for storing exempt group members.
+        $exemptGroupMembers = @();
+
         # Object array to store users.
         $result = @();
     }
     process
     {
+        # Foreach exempt group.
+        foreach ($exemptGroup in $ExemptGroups)
+        {
+            # Get group ID by display name.
+            $exemptGroupIds = (Get-MgGroup -Filter ("displayName eq '{0}'" -f $exemptGroup) -Select Id).Id;
+
+            # Write to log.
+            Write-CustomLog -Message ("Found {0} exempt group(s) with display name '{1}'" -f $exemptGroupIds.Count, $exemptGroup) -Level 'Verbose';
+
+            # For each group ID.
+            foreach ($exemptGroupId in $exemptGroupIds)
+            {
+                # Get group members.
+                $exemptGroupMembers += Get-EidGroupTransitiveMember -Id $exemptGroupId;
+            }
+        }
+
         # Foreach Entra user.
         foreach ($entraUser in $entraUsers)
         {
@@ -148,6 +174,7 @@ function Get-EidUserMfaPolicy
                 ConditionalAccessPolicy = ($policiesTargetingUser).DisplayName;
                 IsProtected             = $false;
                 HasMailbox              = $false;
+                MemberOfExemptGroup     = $false;
             };
 
             # If the user is not a guest.
@@ -230,6 +257,16 @@ function Get-EidUserMfaPolicy
             {
                 # Write to log.
                 Write-CustomLog -Message ("User '{0}' is NOT protected by MFA" -f $entraUser.UserPrincipalName) -Level 'Verbose';
+            }
+
+            # If the user is a member of any of the specified exempt groups.
+            if ($entraUser.UserPrincipalName -in $exemptGroupMembers)
+            {
+                # Write to log.
+                Write-CustomLog -Message ("User '{0}' is a member of an exempt group" -f $entraUser.UserPrincipalName) -Level 'Verbose';
+
+                # Set MemberOfExemptGroup to true.
+                $user.MemberOfExemptGroup = $true;
             }
 
             # Add the user to the object array.
