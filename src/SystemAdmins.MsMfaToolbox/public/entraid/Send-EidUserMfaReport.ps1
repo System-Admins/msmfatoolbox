@@ -11,6 +11,8 @@ function Send-EidUserMfaReport
         The from e-mail address.
     .PARAMETER Subject
         Subject used in the e-mail.
+    .PARAMETER OutputFileName
+        Output file name for the report (must end in .csv).
     .EXAMPLE
         Send-EidUserMfaReport -EmailAddress 'abc@contoso.com';
     .EXAMPLE
@@ -19,6 +21,9 @@ function Send-EidUserMfaReport
     .EXAMPLE
         # Send e-mail with specific subject.
         Send-EidUserMfaReport -Subject "Contoso M365 MFA Findings" -EmailAddress 'to@contoso.com';
+    .EXAMPLE
+        # Specify output file name.
+        Send-EidUserMfaReport -OutputFileName "CustomReportName.csv" -EmailAddress 'to@contoso.com';
     #>
     [cmdletbinding()]
     [OutputType([void])]
@@ -36,7 +41,16 @@ function Send-EidUserMfaReport
         # E-mail address to send from (e-mail must exist in the tenant).
         [Parameter(Mandatory = $false)]
         [ValidateScript({ Test-EmailAddress -InputObject $_ })]
-        [string]$From
+        [string]$From,
+
+        # Output file name for the report (must end in .csv).
+        [Parameter(Mandatory = $false)]
+        [ValidateScript({ $_ -like '*.csv' })]
+        [string]$OutputFileName = ('Microsoft 365 User MFA Status Report - {0}.csv' -f (Get-Date -Format 'yyyy-MM-dd')),
+
+        # Exempt groups to flag users in the report (users that are members of any of the specified groups will be flagged in the report as exempt from MFA).
+        [Parameter(Mandatory = $false)]
+        [string[]]$ExemptGroups
     )
 
     begin
@@ -84,17 +98,14 @@ function Send-EidUserMfaReport
         # Temporary folder path.
         [string]$tempFolderPath = [System.IO.Path]::GetTempPath();
 
-        # File name.
-        [string]$outputFileName = ('Microsoft 365 User MFA Status Report - {0}.csv' -f (Get-Date -Format 'yyyy-MM-dd'));
-
         # Output file path.
-        [string]$outputFilePath = Join-Path -Path $tempFolderPath -ChildPath $outputFileName;
+        [string]$outputFilePath = Join-Path -Path $tempFolderPath -ChildPath $OutputFileName;
+
+        # Counter for users.
+        [int]$userCount = 0;
     }
     process
     {
-        # Counter for users.
-        [int]$userCount = 0;
-
         # Foreach user.
         foreach ($user in $users)
         {
@@ -114,6 +125,13 @@ function Send-EidUserMfaReport
 
             # If the account is disabled.
             if ($false -eq $user.AccountEnabled)
+            {
+                # Continue to next user.
+                continue;
+            }
+
+            # If the user is exempt from MFA based on group membership.
+            if ($user.MemberOfExemptGroup -eq $true)
             {
                 # Continue to next user.
                 continue;
@@ -142,7 +160,8 @@ function Send-EidUserMfaReport
         Write-CustomLog -Message ("Exporting report to '{0}'" -f $outputFilePath) -Level 'Verbose';
 
         # Save status report as CSV.
-        $null = $users | Select-Object -Property Id,
+        $null = $users | Select-Object -Property `
+            Id,
         UserPrincipalName,
         DisplayName,
         AccountEnabled,
@@ -152,6 +171,7 @@ function Send-EidUserMfaReport
         LastSuccessfulSignIn,
         @{ Name = 'ConditionalAccessPolicy'; Expression = { $_.ConditionalAccessPolicy -join '|' } },
         IsProtected,
+        MemberOfExemptGroup,
         Mailbox | Export-Csv -Path $outputFilePath -UseQuotes Always -Encoding utf8 -Delimiter ';' -Force;
 
         # Convert CSV to Base64.
